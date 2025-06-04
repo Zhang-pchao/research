@@ -1,0 +1,49 @@
+# vim:ft=plumed
+#RESTART #allows per-action setting of restart
+UNITS LENGTH=A
+
+GlyN:      GROUP ATOMS=385      
+GlyOhasH:  GROUP ATOMS=391      
+GlyOnotH:  GROUP ATOMS=393
+WaterO:    GROUP ATOMS=1-382:3
+GlyC:      GROUP ATOMS=387,388  #H=389,390
+AllH:      GROUP ATOMS=2-383:3,3-384:3,389,390,386,392,394
+GlyH:      GROUP ATOMS=386,392,394
+WaterH:    GROUP ATOMS=2-383:3,3-384:3
+
+# Calculate center of mass at z-axis component for a group of atoms
+comg: COM ATOMS=GlyN,GlyOhasH,GlyOnotH,GlyC
+#como: COM ATOMS=WaterO
+boxcenter: FIXEDATOM AT=6.05,6.05,40.25
+
+dz:  ZDISTANCES GROUP=comg,boxcenter MEAN 
+adz: CUSTOM ARG=dz.mean FUNC=abs(x) PERIODIC=0,80.5
+
+d05:  VORONOID2  GROUPA=WaterO,GlyN,GlyOhasH,GlyOnotH GROUPB=WaterH,GlyH NRX=3 LAMBDA=-5    D_0=2 D_1=2 D_2=0.5 D_3=0.5 NLIST NL_CUTOFF=2.4 NL_STRIDE=1
+s05:  VORONOIS1  GROUPA=WaterO,GlyN,GlyOhasH,GlyOnotH GROUPB=WaterH,GlyH NRX=3 LAMBDA=-5    D_0=256     D_1=3           NLIST NL_CUTOFF=2.4 NL_STRIDE=1
+
+OPES_METAD ...
+   RESTART=YES
+   LABEL=opes
+   ARG=s05,d05
+   FILE=HILLS
+   TEMP=300
+   PACE=500
+   BARRIER=40
+  #SIGMA_MIN=0.01,0.01,0.001
+  #STATE_RFILE=state.data    
+   STATE_WFILE=STATE   
+   STATE_WSTRIDE=5000 
+   STORE_STATES
+   WALKERS_MPI
+... OPES_METAD 
+
+FLUSH STRIDE=1000
+PRINT ...
+ ARG=s05,d05,adz,opes.bias
+ STRIDE=1
+ FILE=COLVAR
+ RESTART=NO
+... PRINT
+
+ENDPLUMED

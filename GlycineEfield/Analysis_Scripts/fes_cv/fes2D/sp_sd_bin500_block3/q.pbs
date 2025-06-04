@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -q normal3
+#PBS -N fes_2d
+#PBS -l nodes=node39:ppn=1
+#PBS -l walltime=800:00:00
+
+cd $PBS_O_WORKDIR
+
+module load anaconda/anaconda.2020.02
+source activate plumed_2.8.1
+
+python ./FES_from_Reweighting4Gly.py \
+-o ./fes-rew.dat \
+-f ../../COLVAR_tmp \
+--cv s05,d05 \
+--blocks 3 \
+--sigma 0.02,0.06 \
+--skiprows 0 \
+--deltaFat -0.5 \
+--bin 500,500 \
+--temp 300 

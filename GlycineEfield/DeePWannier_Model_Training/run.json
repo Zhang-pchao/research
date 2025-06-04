@@ -1,0 +1,76 @@
+{
+    "model": {
+      "type_map":           ["H","O","N","C"],      
+	  "descriptor": {
+		"_comment":         "if type = se_a_tpe: can’t apply compression method while using atom type embedding",
+        "type":             "se_e2_a",
+		"_comment":         "sel: [16 32 32] means maximal number of neighbors = 16H 32O 32N",
+		"_comment":         "sel: auto:1.1 means automatically counts maximal number of neighbors*1.1",
+        "sel":              "auto:1.1",
+        "rcut_smth":        0.5,
+        "rcut":             6.0,
+        "neuron":           [25,50,100],
+		"_activation_function": "tanh",
+        "resnet_dt":        false,
+		"_comment":         "axis_neuron: Size of the submatrix of G (embedding matrix)",
+        "axis_neuron":      8,
+		"seed":             20240121,
+	    "_comment":		    "descriptor that's all--------------------------------------------------------------"		
+      },
+      "fitting_net": {
+	    "type":		        "dipole",
+	    "dipole_type":	    [1,2,3],
+	    "neuron":		    [100, 100, 100],
+		"_activation_function": "tanh",
+        "resnet_dt":        true,
+		"seed":             20240121,
+	    "_comment":		    "fitting_net that's all-------------------------------------------------------------"		
+      },  
+    "_comment": " model that's all------------------------------------------------------------------------------"
+    },
+
+    "loss": {
+        "type": "tensor",
+        "pref": 0.0,
+        "pref_atomic": 1.0,
+		"_comment":	"We will only use the atomic dipole for training."
+    },
+
+    "learning_rate": {
+		"type":		"exp",
+		"start_lr":	1e-2,
+		"stop_lr":	3.5e-7,
+		"decay_steps":	5000,
+		"_comment":	"decay rate is 0.95"
+    },
+
+    "training": {
+        "numb_steps":        2000000,
+	"seed":                  20240121,
+        "disp_file":         "lcurve.out",
+        "disp_freq":         1000,
+        "numb_test":         10,
+        "save_freq":         5000,
+        "save_ckpt":         "model.ckpt",
+        "disp_training":     true,
+        "time_training":     true,
+        "profiling":         false,
+        "profiling_file":    "timeline.json",
+	"training_data": {
+	    "systems":		 [
+			"/your_path/dpwc_dataset/train/58h2o_025",
+			"/your_path/dpwc_dataset/train/64h2o_axel",			
+			"/your_path/dpwc_dataset/train/water_slab",
+			"/your_path/dpwc_dataset/train/glycine_slab",
+			"/your_path/dpwc_dataset/train/glycine",
+			"/your_path/dpwc_dataset/train/58h2o_efield",			
+			"/your_path/dpwc_dataset/train/glycine_efield"
+			
+		],
+	    "batch_size":	"auto",
+        "auto_prob": 	"prob_sys_size; 0:2:0.40; 2:4:0.08; 4:5:0.40; 5:7:0.12",	
+	    "_comment": " training_data that's all--------------------------------------------------------------------"
+		},
+		"_comment": " training that's all-------------------------------------------------------------------------"		
+    }
+}

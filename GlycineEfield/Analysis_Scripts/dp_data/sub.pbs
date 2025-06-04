@@ -1,0 +1,40 @@
+#!/bin/bash -l
+#PBS -q normal3
+#PBS -N 012_2
+#PBS -l nodes=1:ppn=24
+#PBS -l walltime=1000:00:00
+
+cd $PBS_O_WORKDIR
+
+source /home/pengchao/App/gcc/9.3.0/env.sh
+source /home/pengchao/App/cp2k/cp2k-9.1-voronoic-0106/tools/toolchain/install/setup
+export PATH=$PATH:/home/pengchao/App/cp2k/cp2k-9.1-voronoic-0106/exe/local
+
+workpath=$PBS_O_WORKDIR
+index="012"
+
+#for (( i=10001; i<10200; i=i+1 )); do
+for (( i=10200; i<10401; i=i+1 )); do
+	cd $workpath && cp -r pbe2m062x/pbe pbe2m062x/m062x $workpath/$index/$i && cd $workpath/$index/$i/pbe
+	test $? -ne 0 && exit 1
+	{ if [ ! -f tag_pbe_finished ] ;then
+	mpirun -np 24 cp2k.popt pbe.inp |tee pbe.out 
+    { if test $? -ne 0; then touch tag_pbe_failure
+	else
+	  touch tag_pbe_finished; fi }
+	fi }
+	
+	cd $workpath/$index/$i/m062x
+	test $? -ne 0 && exit 1
+	{ if [ ! -f tag_m062x_finished ] ;then
+	mpirun -np 24 cp2k.popt m062x.inp |tee m062x.out 
+    { if test $? -ne 0; then touch tag_m062x_failure 
+	else
+	  touch tag_m062x_finished && rm *.wfn && rm ../pbe/*.wfn; fi } 
+	fi }
+done
+
+cd $workpath
+test $? -ne 0 && exit 1
+wait
+touch $PBS_JOBNAME

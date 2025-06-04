@@ -1,0 +1,78 @@
+{
+    "model": {
+      "type_map":           ["H","O","N","C"],      
+	  "descriptor": {
+        "type":             "se_e2_a",
+		"_comment":         "sel: [16 32 32] means maximal number of neighbors = 16H 32O 32N",
+		"_comment":         "sel: auto:1.1 means automatically counts maximal number of neighbors*1.1",
+        "sel":              [88,44,1,2],
+        "rcut_smth":        0.5,
+        "rcut":             6.0,
+        "neuron":           [25,50,100],
+        "resnet_dt":        false,
+        "axis_neuron":      8,
+		"seed":             20240127,
+	    "_comment":		    "descriptor that's all--------------------------------------------------------------"		
+      },
+      "fitting_net": {
+	    "neuron":		    [120, 120, 120],
+        "resnet_dt":        true,
+		"seed":             20240127,
+	    "_comment":		    "fitting_net that's all-------------------------------------------------------------"		
+      }, 
+       "modifier": {
+            "type":             "dipole_charge",
+            "model_name":       "/your_path/DeePWannier_Model_Training/frozen_model.pb",
+            "model_charge_map": [-8, -8, -3],
+            "sys_charge_map":   [1, 6, 5, 4],
+            "ewald_h":          1.0,
+            "ewald_beta":       0.1
+        },	  
+    "_comment": " model that's all------------------------------------------------------------------------------"
+    },
+
+    "loss": {
+        "type":         "ener",
+        "start_pref_e": 0.02,
+        "limit_pref_e": 1,
+        "start_pref_f": 1000,
+        "limit_pref_f": 1,
+        "start_pref_v": 0.00,
+        "limit_pref_v": 0,
+        "_comment":     " that's all"
+    },
+
+    "learning_rate": {
+	"type":		"exp",
+	"decay_steps":	5000,
+	"start_lr":	1e-3,	
+	"stop_lr":	3.5e-8,
+	"_comment":	"that's all"
+    },
+
+    "training": {
+        "numb_steps":        5000000,
+	    "seed":              20240127,
+        "disp_file":         "lcurve.out",
+        "disp_freq":         1000,
+        "save_freq":         5000,
+	"training_data": {
+	    "systems":		 [
+            "/your_path/dplr_dataset/train/58h2o_024",
+            "/your_path/dplr_dataset/train/58h2o_025",
+            "/your_path/dplr_dataset/train/58h2o_efield",
+            "/your_path/dplr_dataset/train/64h2o_axel",
+            "/your_path/dplr_dataset/train/64h2o_npt",
+            "/your_path/dplr_dataset/train/glycine",
+            "/your_path/dplr_dataset/train/glycine_efield",
+            "/your_path/dplr_dataset/train/glycine_slab",
+            "/your_path/dplr_dataset/train/water_slab"
+			
+		],
+	    "batch_size":	"auto",
+        "auto_prob": 	"prob_sys_size; 0:4:0.26; 4:5:0.60; 5:6:0.03; 6:7:0.03; 7:9:0.08",	
+	    "_comment": " training_data that's all--------------------------------------------------------------------"
+		},
+		"_comment": " training that's all-------------------------------------------------------------------------"		
+    }
+}

@@ -1,0 +1,156 @@
+#SP
+&GLOBAL
+  PROJECT M062X
+  PRINT_LEVEL LOW
+  RUN_TYPE ENERGY_FORCE
+&END GLOBAL
+
+&FORCE_EVAL
+  METHOD Quickstep
+  &PRINT
+    &FORCES ON
+    &END FORCES
+  &END PRINT  
+  &SUBSYS
+    &CELL # Glycine54H2O 12.028 Glycine53H2O+NaOH 12.111 Glycine54H2O+HCl 12.166
+      A    12.02800000     0.00000000     0.00000000
+      B     0.00000000    12.02800000     0.00000000
+      C     0.00000000     0.00000000    12.02800000
+      PERIODIC XYZ #Direction of applied PBC (geometry aspect)
+    &END CELL
+	&TOPOLOGY
+	  COORD_FILE_FORMAT XYZ
+	  COORD_FILE_NAME ../POSCAR1.xyz
+	&END TOPOLOGY
+    &KIND O    
+      ELEMENT O 
+      BASIS_SET QZV3P-GTH-q6
+      BASIS_SET AUX_FIT admm-dzp-q6
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND H    
+      ELEMENT H 
+      BASIS_SET QZV3P-GTH-q1
+      BASIS_SET AUX_FIT admm-dzp-q1
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND N    
+      ELEMENT N 
+      BASIS_SET QZV3P-GTH-q5
+      BASIS_SET AUX_FIT admm-dzp-q5
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND C    
+      ELEMENT C 
+      BASIS_SET QZV3P-GTH-q4
+      BASIS_SET AUX_FIT admm-dzp-q4
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND Na   
+      ELEMENT Na
+      BASIS_SET QZV3P-GTH-q9
+      BASIS_SET AUX_FIT admm-dzp-q9
+      POTENTIAL GTH-PBE
+    &END KIND
+    &KIND Cl   
+      ELEMENT Cl
+      BASIS_SET QZV3P-GTH-q7
+      BASIS_SET AUX_FIT admm-dzp-q7
+      POTENTIAL GTH-PBE
+    &END KIND	
+  &END SUBSYS
+
+  &DFT
+    BASIS_SET_FILE_NAME  GTH_BASIS_SETS
+    BASIS_SET_FILE_NAME  BASIS_ADMM_UZH
+    POTENTIAL_FILE_NAME  POTENTIAL
+    WFN_RESTART_FILE_NAME ../pbe/PBE-RESTART.wfn
+    CHARGE    0 #Net charge
+    MULTIPLICITY    1 #Spin multiplicity
+    &QS
+      EPS_DEFAULT 1.0E-11 #Set all EPS_xxx to values such that the energy will be correct up to this value
+      EPS_PGF_ORB 1E-12 #If warning "Kohn Sham matrix not 100% occupied" occurs and meantime calculation is unstable, decrease it
+    &END QS
+    &POISSON
+      PERIODIC XYZ #Direction(s) of PBC for calculating electrostatics
+      PSOLVER PERIODIC #The way to solve Poisson equation
+    &END POISSON
+    &AUXILIARY_DENSITY_MATRIX_METHOD
+      METHOD BASIS_PROJECTION #Method used for wavefunction fitting
+      ADMM_PURIFICATION_METHOD MO_DIAG
+    &END AUXILIARY_DENSITY_MATRIX_METHOD
+    &XC
+	  &XC_FUNCTIONAL
+	  	&LIBXC
+	  		FUNCTIONAL MGGA_C_M06_2X
+	  	&END LIBXC
+	  	&LIBXC
+	  		FUNCTIONAL HYB_MGGA_X_M06_2X 
+	  	&END LIBXC
+	  &END XC_FUNCTIONAL
+      &HF
+        FRACTION 0.54 #HF composition
+        &SCREENING
+          EPS_SCHWARZ 1E-10 #The larger the value, the lower the cost and lower the accuracy. default=1E-10
+          SCREEN_ON_INITIAL_P T #Screening ERI based on initial density matrix, need to provide wavefunction restart file
+        &END SCREENING
+        &INTERACTION_POTENTIAL
+          POTENTIAL_TYPE TRUNCATED
+          CUTOFF_RADIUS 6.0 #Cutoff radius for truncated 1/r Coulomb operator
+        &END INTERACTION_POTENTIAL
+        &MEMORY
+          MAX_MEMORY 3000 #Memory(MB) per MPI process for calculating HF exchange
+          EPS_STORAGE_SCALING 0.1
+        &END MEMORY
+      &END HF
+    &END XC
+    &MGRID
+      CUTOFF  1000
+      REL_CUTOFF  70
+    &END MGRID
+    &SCF
+      MAX_SCF 50 #Maximum number of steps of inner SCF
+      EPS_SCF 1.0E-07 #Convergence threshold of density matrix of inner SCF
+      SCF_GUESS RESTART #Use wavefunction from WFN_RESTART_FILE_NAME file as initial guess
+      &OT
+        PRECONDITIONER FULL_ALL #Usually best but expensive for large system. Cheaper: FULL_SINGLE_INVERSE and FULL_KINETIC
+        MINIMIZER DIIS #CG is worth to consider in difficult cases
+        LINESEARCH 2PNT #1D line search algorithm for CG. 2PNT is default, 3PNT is better but more costly. GOLD is best but very expensive
+      &END OT
+      &OUTER_SCF
+        MAX_SCF 10 #Maximum number of steps of outer SCF
+        EPS_SCF 1.0E-07 #Convergence threshold of outer SCF
+      &END OUTER_SCF
+      &PRINT
+        &RESTART #Note: Use "&RESTART OFF" can prevent generating .wfn file
+          BACKUP_COPIES 0 #Maximum number of backup copies of wfn file. 0 means never
+        &END RESTART
+      &END PRINT
+    &END SCF
+  &LOCALIZE
+      METHOD CRAZY
+      EPS_LOCALIZATION 1.0E-8
+      !EPS_OCCUPATION 1
+      &PRINT
+        ! Output the Wannier functions as cube-files
+        !&WANNIER_CUBES
+        !&END WANNIER_CUBES
+        ! Output the centers of all Wannier functions as xyz-file
+        &WANNIER_CENTERS
+           IONS+CENTERS .TRUE.
+        &END WANNIER_CENTERS
+        &WANNIER_SPREADS
+        &END WANNIER_SPREADS
+      &END PRINT
+    &END LOCALIZE	
+    &PRINT
+  	#&MO_MOLDEN
+  	#  NDIGITS 8
+  	#  GTO_KIND SPHERICAL
+  	#&END MO_MOLDEN
+  	&HIRSHFELD
+  	  FILENAME hirshfeld 
+  	&END HIRSHFELD
+    &END PRINT  
+  &END DFT
+&END FORCE_EVAL
