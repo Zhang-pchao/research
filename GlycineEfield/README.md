@@ -13,7 +13,7 @@ Requiring the installation of the [OPES](https://www.plumed.org/doc-v2.8/user-do
 
 To use Voronoi CVs code, put the three .cpp files above into /your_plumed_path/plumed/src/colvar, and then compile plumed. 
 
-The Voronoi CV VORONOID2.cpp, VORONOIS1.cpp code files are linked to CVs named s_d, s_p as illustrated in paper. 
+The Voronoi CV VORONOID2.cpp, VORONOIS1.cpp [code files](https://github.com/Zhang-pchao/GlycineTautomerism/tree/main/Voronoi_collective_variables) are linked to CVs named s_d, s_p as illustrated in paper. 
 
 Other Voronoi CVs can be used to calculate the [diffusion coefficient](https://github.com/Zhang-pchao/OilWaterInterface/tree/main/Ion_Diffusion_Coefficient) for H₃O⁺ or OH⁻ ions, and the [water autoionization](https://github.com/Zhang-pchao/OilWaterInterface/tree/main) process.
 
