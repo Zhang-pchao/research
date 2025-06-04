@@ -1,5 +1,3 @@
-# Simulation Data Repository
-
 This repository collects input and output file details for research paper simulations to support reproducibility and open science.
 
 ## Works
