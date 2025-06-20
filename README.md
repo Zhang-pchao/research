@@ -14,5 +14,5 @@ Each entry includes links to the original publication and associated GitHub repo
 | 2 | [Intramolecular and water mediated tautomerism of solvated glycine](https://pubs.acs.org/doi/10.1021/acs.jcim.4c00273) | [🔗 GitHub](https://github.com/Zhang-pchao/GlycineTautomerism) | 2024 | *J. Chem. Inf. Model.* |
 | 3 | [Hydroxide and hydronium ions modulate the dynamic evolution of nitrogen nanobubbles in water](https://pubs.acs.org/doi/10.1021/jacs.4c06641) | [🔗 GitHub](https://github.com/Zhang-pchao/N2BubbleIon) | 2024 | *J. Am. Chem. Soc.* |
 | 4 | [Propensity of water self-ions at air(oil)-water interfaces revealed by deep potential molecular dynamics with enhanced sampling](https://pubs.acs.org/doi/full/10.1021/acs.langmuir.4c05004) | [🔗 GitHub](https://github.com/Zhang-pchao/OilWaterInterface) | 2025 | *Langmuir* |
-| 5 | [Modulation of electric field and interface on competitive reaction mchanisms](https://pubs.acs.org/articlesonrequest/AOR-NMVU6VAHH7GKQHZNMPMC) | [🔗 GitHub](https://github.com/Zhang-pchao/research/tree/main/GlycineEfield) | 2025 | *J. Chem. Theory Comput.* |
+| 5 | [Modulation of electric field and interface on competitive reaction mchanisms](https://doi.org/10.1021/acs.jctc.5c00705) | [🔗 GitHub](https://github.com/Zhang-pchao/research/tree/main/GlycineEfield) | 2025 | *J. Chem. Theory Comput.* |
 ---
