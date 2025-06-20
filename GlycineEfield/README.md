@@ -1,6 +1,6 @@
 ## Paper
 
-Modulation of electric field and interface on competitive reaction mechanisms.
+Modulation of electric field and interface on competitive reaction mechanisms. [ACS Articles on Request link](https://pubs.acs.org/articlesonrequest/AOR-NMVU6VAHH7GKQHZNMPMC)
 
 ## Dataset and model
 
