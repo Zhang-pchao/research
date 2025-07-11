@@ -1,7 +1,3 @@
-## Paper
-
-Modulation of electric field and interface on competitive reaction mechanisms. [ACS Articles on Request link](https://pubs.acs.org/articlesonrequest/AOR-NMVU6VAHH7GKQHZNMPMC)
-
 ## Dataset and model
 
 The data sets for training the DPLR model and DW model are uploaded to [Zenodo](https://zenodo.org/records/14469805).
@@ -26,6 +22,10 @@ Incorporating lammps and plumed, follow [plumed-feedstock](https://github.com/Zh
 
 ### 5. cp2k_v9.1
 Incorporating plumed
+
+## Paper
+
+Modulation of electric field and interface on competitive reaction mechanisms. [ACS Articles on Request link](https://pubs.acs.org/articlesonrequest/AOR-NMVU6VAHH7GKQHZNMPMC) [JCTC](https://pubs.acs.org/doi/10.1021/acs.jctc.5c00705)
 
 ```bibtex
 @article{Zhang_JChemTheoryComput_2025_v21_p6584,
