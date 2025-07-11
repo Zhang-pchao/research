@@ -26,3 +26,15 @@ Incorporating lammps and plumed, follow [plumed-feedstock](https://github.com/Zh
 
 ### 5. cp2k_v9.1
 Incorporating plumed
+
+```bibtex
+@article{Zhang_JChemTheoryComput_2025_v21_p6584,
+  title        = {{Modulation of Electric Field and Interface on Competitive Reaction Mechanisms}},
+  author       = {Pengchao Zhang and Xuefei Xu},
+  year         = 2025,
+  journal      = {J. Chem. Theory Comput.},
+  volume       = 21,
+  number       = 13,
+  pages        = {6584--6593},
+  doi          = {10.1021/acs.jctc.5c00705},
+}
