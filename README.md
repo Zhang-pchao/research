@@ -1,12 +1,18 @@
 # Research Reproducibility Archive
 
-This repository curates the computational assets underlying recent publications on aqueous interfaces, biomolecular tautomerism, and electric-field-driven chemistry. The goal is to make **simulation inputs, trained models, and analysis workflows** permanently accessible so that other researchers can reproduce and extend the studies with minimal friction.
+[![Repository metrics dashboard](github-metrics.svg)](github-metrics.svg)
+
+This repository curates the computational assets underlying recent publications on aqueous interfaces, biomolecular tautomerism,
+and electric-field-driven chemistry. The goal is to make **simulation inputs, trained models, and analysis workflows** permanently
+accessible so that other researchers can reproduce and extend the studies with minimal friction. The embedded metrics panel is
+updated by GitHub Actions to visualise publication citations, collaboration activity, and repository health signals.
 
 ---
 
 ## Published Works
 
-Each entry links to the original article and the companion GitHub repository where input/output files, scripts, and post-processing notebooks are maintained.
+Each entry links to the original article and the companion GitHub repository where input/output files, scripts, and post-processing
+notebooks are maintained.
 
 | No. | Title & Link | GitHub | Year | Journal |
 |:---:|:-------------|:--------|:----:|:--------|
@@ -21,25 +27,33 @@ Each entry links to the original article and the companion GitHub repository whe
 ## How to Use This Archive
 
 1. **Select a publication** from the table above to identify the scientific context and journal venue.
-2. **Follow the GitHub link** to obtain the complete simulation package, including input geometries, PLUMED configuration files, Deep Potential/Deep Wannier training sets, and analysis notebooks prepared by the authors.
-3. **Consult companion datasets** where provided. For example, the `GlycineEfield` entry in this repository points to Zenodo-hosted training data for the Deep Potential Long-Range (DPLR) and Deep Wannier (DW) models associated with the JCTC study.
-4. **Replicate or extend** the calculations by adapting the published workflows to your systems of interest. The repositories are organized so that new systems, sampling strategies, or machine-learning force fields can be integrated with minimal restructuring.
+2. **Follow the GitHub link** to obtain the complete simulation package, including input geometries, PLUMED configuration files,
+   Deep Potential/Deep Wannier training sets, and analysis notebooks prepared by the authors.
+3. **Consult companion datasets** where provided. For example, the `GlycineEfield` entry in this repository points to Zenodo-hosted
+   training data for the Deep Potential Long-Range (DPLR) and Deep Wannier (DW) models associated with the JCTC study.
+4. **Replicate or extend** the calculations by adapting the published workflows to your systems of interest. The repositories are
+   organized so that new systems, sampling strategies, or machine-learning force fields can be integrated with minimal restructuring.
 
 ## Publication Capsules
 
 ### 1. Double-layer distribution of hydronium and hydroxide ions in the air-water interface (2024, *ACS Phys. Chem Au*)
 - **Research theme:** Characterizes how self-ions partition at the air–water boundary and influence double-layer structure.
-- **Shared resources:** The linked GitHub repository provides the enhanced-sampling inputs, model checkpoints, and post-processing scripts required to reproduce the reported double-layer profiles.
-- **Extending the work:** Replace the interfacial composition or add co-solutes within the same workflow to explore how environmental factors reshape the double layer.
+- **Shared resources:** The linked GitHub repository provides the enhanced-sampling inputs, model checkpoints, and post-processing
+  scripts required to reproduce the reported double-layer profiles.
+- **Extending the work:** Replace the interfacial composition or add co-solutes within the same workflow to explore how environmental
+  factors reshape the double layer.
 
 ### 2. Intramolecular and water mediated tautomerism of solvated glycine (2024, *J. Chem. Inf. Model.*)
 - **Research theme:** Maps the competition between neutral and zwitterionic glycine tautomers under explicit-solvent conditions.
-- **Shared resources:** Simulation inputs and Voronoi collective variables (CVs) for enhanced sampling are hosted in the companion GitHub repository, enabling direct reuse in new amino-acid or peptide studies.
-- **Extending the work:** Substitute different biomolecules or introduce external fields to probe tautomer populations using the supplied CVs and sampling recipes.
+- **Shared resources:** Simulation inputs and Voronoi collective variables (CVs) for enhanced sampling are hosted in the companion
+  GitHub repository, enabling direct reuse in new amino-acid or peptide studies.
+- **Extending the work:** Substitute different biomolecules or introduce external fields to probe tautomer populations using the
+  supplied CVs and sampling recipes.
 
 ### 3. Hydroxide and hydronium ions modulate the dynamic evolution of nitrogen nanobubbles in water (2024, *J. Am. Chem. Soc.*)
-- **Research theme:** Investigates how water self-ions regulate nanobubble stabilization in aqueous media.
-- **Shared resources:** Input decks for reactive molecular dynamics, bubble-tracking analysis utilities, and figure-generation scripts are archived in the associated GitHub repository.
+- **Research theme:** Investigates how water self-ions regulate nanobubble nucleation, growth, and stabilization in aqueous media.
+- **Shared resources:** Input decks for reactive molecular dynamics, bubble-tracking analysis utilities, and figure-generation scripts
+  are archived in the associated GitHub repository.
 - **Extending the work:** Apply the same pipelines to different dissolved gases or ion concentrations to interrogate interfacial gas dynamics.
 
 ### 4. Propensity of water self-ions at air(oil)-water interfaces revealed by deep potential molecular dynamics with enhanced sampling (2025, *Langmuir*)
@@ -52,9 +66,44 @@ Each entry links to the original article and the companion GitHub repository whe
 - **Shared resources:** This repository contains the `GlycineEfield` package with analysis scripts, enhanced-sampling molecular dynamics setups, infrared trajectory inputs, and Deep Potential/Deep Wannier training workflows. Zenodo hosts the large DPLR and DW datasets referenced therein.
 - **Extending the work:** Introduce alternative reactants, field strengths, or interfacial compositions by editing the provided PLUMED, LAMMPS, and CP2K inputs while retraining the ML potentials as needed.
 
+## Automation & Metrics
+
+- **GitHub metrics dashboard:** The `.github/workflows/metrics.yml` workflow regenerates `github-metrics.svg` on a weekly cadence using the
+  [`lowlighter/metrics`](https://github.com/lowlighter/metrics) action. Create a classic personal access token (PAT) with the `public_repo`
+  and `read:user` scopes, store it as the repository secret `METRICS_TOKEN`, and trigger the “Update repository metrics” workflow once
+  manually to seed the SVG. Subsequent runs execute on the configured cron schedule and whenever you dispatch the workflow.
+- **Customising the panel:** Adjust the `plugin_*` flags in `metrics.yml` to surface additional insights (e.g., open-source contributions,
+  languages, or sponsorships). The generated SVG is committed back to `main`, making it easy to embed anywhere in your documentation.
+
+### Enabling the dashboard on your GitHub profile
+
+1. **Confirm you have a profile repository.** Create a repository named exactly after your GitHub username (for example,
+   `Zhang-pchao/Zhang-pchao`) and add a `README.md`. GitHub renders this README on your public profile page.
+2. **Embed the metrics panel.** Add the following snippet to the profile README to display the continuously refreshed SVG:
+
+   ```markdown
+   [![Repository metrics dashboard](https://raw.githubusercontent.com/Zhang-pchao/research/main/github-metrics.svg)](https://github.com/Zhang-pchao/research/blob/main/github-metrics.svg)
+   ```
+
+3. **Verify permissions and secrets.** Ensure the PAT stored as `METRICS_TOKEN` remains valid (classic tokens expire unless set to “No
+   expiration”). If you need to include private repository activity or organisation analytics, reissue the token with the `repo` and
+   `read:org` scopes and update the secret.
+4. **Monitor workflow runs.** Navigate to the **Actions** tab, select “Update repository metrics”, and confirm that the latest run succeeded.
+   Any configuration errors are surfaced in the logs; update `metrics.yml` accordingly to enable additional plugins such as citation counts
+   or repository traffic summaries.
+
+## Dependency Maintenance
+
+Automated dependency updates are managed by [Renovate](https://docs.renovatebot.com/). The `renovate.json` configuration focuses on
+GitHub Actions workflows, batching upgrades into a single weekly pull request that includes a dependency dashboard for visibility.
+
 ## Extending the Archive
 
-- **Adding new publications:** Duplicate the table row format, include direct links to the article and resource repository, and summarize the study using the capsule template above.
-- **Documenting datasets:** Note any external hosting services (e.g., Zenodo) alongside in-repository folders so future users can locate raw data and model checkpoints.
-- **Maintaining workflows:** Keep simulation scripts and analysis notebooks synchronized with the published results; version tags or release notes in the companion repositories help track updates.
-- **Community feedback:** Issues and pull requests are welcome for clarifications, missing files, or suggestions on how to broaden the reusable components of each study.
+- **Adding new publications:** Duplicate the table row format, include direct links to the article and resource repository, and
+  summarize the study using the capsule template above.
+- **Documenting datasets:** Note any external hosting services (e.g., Zenodo) alongside in-repository folders so future users can locate
+  raw data and model checkpoints.
+- **Maintaining workflows:** Keep simulation scripts and analysis notebooks synchronized with the published results; version tags or release
+  notes in the companion repositories help track updates.
+- **Community feedback:** Issues and pull requests are welcome for clarifications, missing files, or suggestions on how to broaden the
+  reusable components of each study.
