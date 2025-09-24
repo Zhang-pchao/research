@@ -58,4 +58,3 @@ Each entry links to the original article and the companion GitHub repository whe
 - **Documenting datasets:** Note any external hosting services (e.g., Zenodo) alongside in-repository folders so future users can locate raw data and model checkpoints.
 - **Maintaining workflows:** Keep simulation scripts and analysis notebooks synchronized with the published results; version tags or release notes in the companion repositories help track updates.
 - **Community feedback:** Issues and pull requests are welcome for clarifications, missing files, or suggestions on how to broaden the reusable components of each study.
-

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="metricsTitle metricsDesc">
+  <title id="metricsTitle">Repository metrics placeholder</title>
+  <desc id="metricsDesc">This placeholder is committed so the README can embed the GitHub metrics panel. It will be overwritten by the metrics workflow.</desc>
+  <style>
+    text { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; fill: #0d1117; }
+    .background { fill: #f6f8fa; }
+    .border { fill: none; stroke: #d0d7de; stroke-width: 4; }
+    .headline { font-size: 36px; font-weight: 600; }
+    .subtitle { font-size: 20px; fill: #57606a; }
+    .hint { font-size: 18px; fill: #57606a; }
+  </style>
+  <rect class="background" x="0" y="0" width="960" height="540" rx="24"/>
+  <rect class="border" x="12" y="12" width="936" height="516" rx="24"/>
+  <text x="480" y="180" text-anchor="middle" class="headline">GitHub Metrics Pending</text>
+  <text x="480" y="240" text-anchor="middle" class="subtitle">Run “Update repository metrics” workflow</text>
+  <text x="480" y="300" text-anchor="middle" class="hint">Configure the METRICS_TOKEN secret to enable automatic updates.</text>
+</svg>
