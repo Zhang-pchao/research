@@ -38,7 +38,7 @@ Each entry links to the original article and the companion GitHub repository whe
 - **Extending the work:** Substitute different biomolecules or introduce external fields to probe tautomer populations using the supplied CVs and sampling recipes.
 
 ### 3. Hydroxide and hydronium ions modulate the dynamic evolution of nitrogen nanobubbles in water (2024, *J. Am. Chem. Soc.*)
-- **Research theme:** Investigates how water self-ions regulate nanobubble nucleation, growth, and stabilization in aqueous media.
+- **Research theme:** Investigates how water self-ions regulate nanobubble stabilization in aqueous media.
 - **Shared resources:** Input decks for reactive molecular dynamics, bubble-tracking analysis utilities, and figure-generation scripts are archived in the associated GitHub repository.
 - **Extending the work:** Apply the same pipelines to different dissolved gases or ion concentrations to interrogate interfacial gas dynamics.
 
