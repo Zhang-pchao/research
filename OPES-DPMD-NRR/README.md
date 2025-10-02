@@ -1,6 +1,6 @@
 # OPES-DPMD-NRR Workflow Assets
 
-This directory collects the input decks, scripts, and reference data that support the neural network reactive dynamics workflow for nitrogen reduction using on-the-fly enhanced sampling (OPES) and DeePMD-based force fields. The material is organized by stage of the pipeline.
+This directory collects the input decks, scripts, and reference data that support the neural network reactive dynamics workflow for nitrogen reduction using OPES and DeePMD-based force fields. The material is organized by stage of the pipeline.
 
 ## Directory Overview
 
