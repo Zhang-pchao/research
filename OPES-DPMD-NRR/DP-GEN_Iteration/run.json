@@ -1,0 +1,367 @@
+{    
+  "type_map": [
+"H",
+"O",
+"N",
+"C",
+"Ru"
+  ],
+  "mass_map": [
+     1.00794,
+     15.9994,    
+     14.0067,     
+     12.0107,
+     101.07
+  ],
+
+  "init_multi_systems": true,
+  "init_data_prefix": "/your_path/dpgen/NRR/NNH/dataset/",
+  "init_data_sys":   [
+    "init_PBED3",
+    "accrun01"
+  ], 
+  "init_batch_size": [
+    "auto",
+    "auto"
+  ], 
+
+  "sys_configs_prefix": "/your_path/dpgen/NRR/NNH/structure",
+  "sys_configs": [
+    ["init/task000/POSCAR"],
+    ["init/task001/POSCAR"],
+    ["init/task002/POSCAR"],
+    ["init/task003/POSCAR"],
+    ["init/task004/POSCAR"],
+    ["init/task005/POSCAR"],
+    ["run11/iter00/task.003.000000/POSCAR"],
+    ["run11/iter00/task.004.000000/POSCAR"],
+    ["run11/iter00/task.005.000000/POSCAR"],
+    ["run11/iter00/task.006.000000/POSCAR"],
+    ["run11/iter00/task.007.000000/POSCAR"],
+    ["run11/iter00/task.008.000000/POSCAR"],
+    ["53153/16/POSCAR"],
+    ["53153/16/iter00/task.012.000000/POSCAR"],
+    ["53153/16/iter00/task.013.000000/POSCAR"],
+    ["53153/16/iter00/1/task.014.000000/POSCAR"],
+    ["53153/16/iter00/2/task.014.000000/POSCAR"],
+    ["53153/16/iter00/task.015.000000/POSCAR"],
+    ["53153/16/iter00/task.016.000000/POSCAR"],
+    ["53153/16/iter00/task.018.000000/POSCAR"],
+    ["53153/16/iter00/task.019.000000/POSCAR"],
+    ["53153/16/iter00/task.020.000000/POSCAR"],
+    ["53153/16/iter00/task.021.000000/POSCAR"],
+    ["53153/16/iter00/task.022.000000/POSCAR"],
+    ["53153/16/iter00/task.023.000000/POSCAR"],
+    ["53153/16/iter00/task.024.000000/POSCAR"]
+
+  ],
+
+    "numb_models":	4,
+    "_train_param":	"input.json",
+
+    "default_training_param" : {
+      "model":{
+        "type_map": ["H","O","N","C","Ru"],
+        "descriptor":{
+          "type":"se_a",
+          "sel": [120,60,6,20,2],
+          "rcut_smth": 0.5,
+          "rcut": 6.0,
+          "neuron":	[25,50,100],
+          "resnet_dt":	false,
+          "axis_neuron": 16
+        },
+        "fitting_net":{
+          "neuron":		[240, 240, 240],
+		  "type":             "ener",
+		  "activation_function": "tanh",
+          "resnet_dt":        true
+        }
+      },
+      "learning_rate":{
+        "type": "exp",
+        "start_lr":		0.001,
+        "decay_steps":		1000,
+        "decay_rate":		0.98
+      },
+      "loss":{
+        "start_pref_e":      0.02,
+        "limit_pref_e":      1.0,
+        "start_pref_f":      1000,
+        "limit_pref_f":      1.0,
+        "start_pref_v":      0.0,
+        "limit_pref_v":      0.0
+      },
+      "training":{
+        "set_prefix":		"set",    
+        "stop_batch":		1000,
+        "disp_file":		"lcurve.out",
+        "disp_freq":		1000,
+        "numb_test":		1,
+        "save_freq":		10000,
+        "save_ckpt":		"model.ckpt",
+        "_load_ckpt":		"model.ckpt",
+        "disp_training":	true,
+        "time_training":	true,
+        "profiling":		false,
+        "profiling_file":	"timeline.json"
+      }
+    },
+    "model_devi_dt":		0.0005,
+    "model_devi_skip":		100000,
+    "use_relative": true,
+    "epsilon": 1.0,
+    "model_devi_f_trust_lo":	0.10,
+    "model_devi_f_trust_hi":	0.40,
+    "model_devi_e_trust_lo":	1e10,
+    "model_devi_e_trust_hi":	1e10,
+    "model_devi_clean_traj":	false,
+    "_model_devi_plumed": true,
+    "model_devi_jobs":	[
+    {
+      "sys_idx": [0,1,2],
+      "temps"  : [300],
+      "press"  : [1],   
+      "trj_freq": 5,
+      "nsteps":   10000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    },
+    {
+      "sys_idx": [3,4,5],
+      "temps"  : [300],
+      "press"  : [1],   
+      "trj_freq": 5,
+      "nsteps":   10000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    },
+    {
+      "sys_idx": [6,7,8],
+      "temps"  : [300],
+      "press"  : [1],   
+      "trj_freq": 3,
+      "nsteps":   10000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    },
+    {
+      "sys_idx": [9,10,11],
+      "temps"  : [300],
+      "press"  : [1],   
+      "trj_freq": 3,
+      "nsteps":   10000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    },
+    {   "sys_idx": [12],"trj_freq": 10,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [10000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [13],"trj_freq": 10,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [20000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [14],"trj_freq": 10,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [20000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [15,16],"trj_freq": 10,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [80000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [17,18],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [120000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [17,18],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [80000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [19],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [200000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [20],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [21],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [22],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [23],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [14],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [330], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [330], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [18,19,20],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [360], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [360], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [24],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/noinput.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [360], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [360], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [24],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [360], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [360], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [23],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/noinput.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [360], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [360], "V_STRIDE": [10]}
+                      }
+    },
+
+    {   "sys_idx": [23],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {   "sys_idx": [25],"trj_freq": 100,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/input.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [300000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [10]}
+                      }
+    },
+    {
+      "sys_idx": [25],
+      "temps"  : [300],
+      "press"  : [1],   
+      "trj_freq": 3,
+      "nsteps":   300000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    },
+    {
+      "sys_idx": [25],
+      "temps"  : [330],
+      "press"  : [1],   
+      "trj_freq": 3,
+      "nsteps":   300000,
+      "ensemble": "nvt",
+      "_idx":     "00"
+    }
+
+
+    ],
+
+    "fp_style":	       "cp2k",
+	"ratio_failed": 0.2,
+    "shuffle_poscar":	false,
+    "fp_task_max":	0,
+    "fp_task_min":	0,
+     "fp_pp_path":	".",
+    "fp_pp_files":	[],
+    "user_fp_params":   {
+       "GLOBAL": {
+           "PROJECT": "DPGEN",
+           "RUN_TYPE": "ENERGY_FORCE"
+         },
+         "FORCE_EVAL": {
+           "METHOD": "Quickstep",
+           "STRESS_TENSOR": "ANALYTICAL",
+           "DFT": {
+             "BASIS_SET_FILE_NAME": "BASIS_MOLOPT",
+             "POTENTIAL_FILE_NAME": "GTH_POTENTIALS",
+             "MULTIPLICITY": 2,
+             "UKS": " ",
+             "MGRID": {
+               "CUTOFF": 800,
+               "REL_CUTOFF": 40,
+               "NGRIDS": 20
+             },
+             "QS": {
+               "EPS_DEFAULT": "1.0E-11"
+             },
+             "SCF": {
+               "EPS_SCF": "3.0E-7",
+               "MAX_SCF": 128,
+               "DIAGONALIZATION": {
+                   "ALGORITHM": "STANDARD"
+               },
+               "MIXING":{ 
+                  "METHOD": "BROYDEN_MIXING",
+                  "ALPHA": 0.4,
+                  "NBROYDEN": 8
+                },
+               "SMEAR": {
+                  "METHOD": "FERMI_DIRAC",
+                  "ELECTRONIC_TEMPERATURE": 300
+                },
+                "ADDED_MOS": 150 
+ 
+             },
+             "XC": {
+               "XC_FUNCTIONAL": {"_": "PBE"},
+               "VDW_POTENTIAL":{
+                  "POTENTIAL_TYPE": "PAIR_POTENTIAL",        
+                  "PAIR_POTENTIAL":{
+                      "PARAMETER_FILE_NAME": "dftd3.dat",
+                      "TYPE": "DFTD3",
+                      "REFERENCE_FUNCTIONAL": "PBE"
+                  }
+                }
+             }
+           },
+           "SUBSYS": {
+               "CELL":{
+                   "A": "12.3302207 .0 .0",
+                   "B": ".0 12.8139416 .0",
+                   "C": ".0 .0 16"
+                   },
+               "KIND": {
+                 "_": ["H","O","N","C","Ru"],
+                 "BASIS_SET": ["DZVP-MOLOPT-SR-GTH-q1", "DZVP-MOLOPT-SR-GTH-q6", "DZVP-MOLOPT-SR-GTH-q5","DZVP-MOLOPT-SR-GTH-q4","DZVP-MOLOPT-SR-GTH-q16"],
+                 "POTENTIAL": ["GTH-PBE-q1", "GTH-PBE-q6", "GTH-PBE-q5", "GTH-PBE-q4", "GTH-PBE-q16"],
+                 "MAGNETIZATION": ["0.6", "0.6", "1", "0.6", "3"]
+                }
+                                       
+            },
+           "PRINT": {
+             "FORCES": {
+               "_": "ON"
+             }
+           }
+        }
+    }
+}

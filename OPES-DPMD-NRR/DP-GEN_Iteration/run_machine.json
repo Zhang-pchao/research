@@ -1,0 +1,78 @@
+{
+  "train": [
+    {
+      "machine": {
+	    "machine_type": "slurm",
+        "hostname": "xxx.xxx.xxx.xxx",
+        "password": "xxx",
+        "port": 22,
+        "username": "xxx",
+        "work_path": "/your_path/dpgen/NRR/NNH/tmp/train"
+      },
+      "resources": {
+        "numb_gpu": 1,
+		"module_list": ["conda"],	
+		"source_list": ["activate dpmdkit_v2.1.5_0202"],
+        "time_limit": "501:00:00"
+      },
+      "command": "/your_path/conda/envs/dpmdkit_v2.1.5_0202/bin/dp",
+      "group_size": 1,
+	  "python_path": "/your_path/conda/envs/dpmdkit_v2.1.5_0202/bin/python3.10"
+    }
+  ],
+
+  "model_devi": [
+    {
+      "machine": {
+	    "machine_type": "slurm",
+        "hostname": "xxx.xxx.xxx.xxx",
+        "password": "xxx",
+        "port": 22,
+        "username": "xxx",
+        "work_path": "/your_path/dpgen/NRR/NNH/tmp/model_devi"
+      },
+      "resources": {
+        "numb_gpu": 1,
+		"module_list": ["conda"],	
+		"source_list": ["activate dpmdkit_v2.1.5_0202"],
+        "time_limit": "502:00:00"
+      },
+      "command": "/your_path/conda/envs/dpmdkit_v2.1.5_0202/bin/lmp",
+      "group_size": 1
+    }
+  ],
+
+  "fp": [
+    {
+      "machine": {
+		"machine_type": "pbs",
+        "hostname": "xxx.xxx.xxx.xxx",
+        "password": "xxx",
+        "port": 22,
+        "username": "pubtest",
+        "work_path": "/your_path/dpgen/water_ion/tmp/fp"
+      },
+      "resources": {
+        "numb_node": 1,
+        "task_per_node": 24,
+		"partition": "normal3",
+		"exclude_list": [],
+        "allow_failure": true,
+        "ratio_failure": 0.6,
+        "with_mpi": true,
+		"module_list": [
+				"cp2k/2023.1_plm"
+		],
+		"source_list": [
+        "/your_path/app/cp2k/cp2k-2023.1-voronoicv-0202/tools/toolchain/install/setup"
+		],
+        "time_limit": "503:0:0"
+	    },
+      "command": "cp2k.popt input.inp",
+      "group_size": 50
+    }
+  ]
+}
+
+
+
