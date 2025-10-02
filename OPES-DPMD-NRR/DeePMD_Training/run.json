@@ -1,0 +1,172 @@
+{    
+  "type_map": ["H","O","N","C","Ru"  ],
+  "mass_map": [ 1.00794, 15.9994, 14.0067, 12.0107, 101.07 ],
+
+  "init_data_prefix": "/your_path/dpgen/NRR/NNH/dataset",
+  "init_data_sys":  ["dataset_53153_all/data.001","dataset_53153_all/data.002","dataset_53153_all/data.003","dataset_53153_all/data.004","dataset_53153_all/data.005","dataset_53153_all/data.006",
+"dataset_53153_all/data.010","dataset_53153_all/data.011","dataset_53153_all/data.012","dataset_53153_all/data.013","dataset_53153_all/data.014","dataset_53153_all/data.015","dataset_53153_all/data.016",
+"dataset_53153_all/data.017","dataset_53153_all/data.018","dataset_53153_all/data.019","dataset_53153_all/data.020","dataset_53153_all/data.021","dataset_53153_all/data.022","dataset_53153_all/data.023",
+"dataset_53153_all/data.024","dataset_53153_all/data.025",
+"dataset_53153_add/data.000","dataset_53153_add/data.001","dataset_53153_add/data.002","dataset_53153_add/data.003","dataset_53153_add/set1","dataset_53153_add/set2",
+"dataset_NN/data.100","dataset_NN/data.101","dataset_NN/data.102","dataset_NN/data.103","dataset_NN/data.104","dataset_NN/data.105","dataset_NN/data.106","dataset_NN/data.107","dataset_NN/data.108",
+"dataset_NN/data.109","dataset_NN/data.110","dataset_NN/data.111","dataset_NN/data.112","dataset_NN/data.113","dataset_NN/data.114"
+], 
+
+  "sys_configs_prefix": "/your_path/dpgen/NRR/NNH/structure",
+  "sys_configs": [
+    ["53153/all/step1/Ru/POSCAR"],
+    ["53153/all/step1/RuH/POSCAR"]
+
+  ],
+
+  "init_multi_systems": false,
+    "numb_models":	1,
+    "_train_param":	"input.json",
+
+    "default_training_param" : {
+      "model":{
+        "type_map": ["H","O","N","C","Ru"],
+        "descriptor":{
+          "type":"se_e2_a",
+          "sel": [120,60,12,40,2],
+          "rcut_smth": 0.5,
+          "rcut": 6.0,
+          "neuron":	[25,50,100],
+          "resnet_dt":	false,
+          "axis_neuron": 16
+        },
+        "fitting_net":{
+          "neuron":		[240, 240, 240],
+		  "type":             "ener",
+		  "activation_function": "tanh",
+          "resnet_dt":        true
+        }
+      },
+      "learning_rate":{
+        "type": "exp",
+        "start_lr":		1e-03,
+	"stop_lr":              1e-08
+      },
+      "loss":{
+        "start_pref_e":      0.02,
+        "limit_pref_e":      1.0,
+        "start_pref_f":      1000,
+        "limit_pref_f":      1.0,
+        "start_pref_v":      0.0,
+        "limit_pref_v":      0.0
+      },
+      "training":{
+        "set_prefix":		"set",    
+        "stop_batch":		2000000,
+        "disp_file":		"lcurve.out",
+        "disp_freq":		1000,
+        "numb_test":		1,
+        "save_freq":		300,
+        "save_ckpt":		"model.ckpt",
+        "_load_ckpt":		"model.ckpt",
+        "disp_training":	true,
+        "time_training":	true,
+        "profiling":		false,
+        "profiling_file":	"timeline.json"
+      }
+    },
+    "model_devi_dt":		0.0005,
+    "model_devi_skip":		1000,
+    "use_relative": true,
+    "epsilon": 1.0,
+    "model_devi_f_trust_lo":	0.00,
+    "model_devi_f_trust_hi":	0.80,
+    "model_devi_e_trust_lo":	1e10,
+    "model_devi_e_trust_hi":	1e10,
+    "model_devi_clean_traj":	false,
+    "model_devi_plumed": true,
+    "model_devi_jobs":	[
+    {   "sys_idx": [1],"trj_freq": 10,"_idx": "00",
+            "template":{ "lmp": "/your_path/dpgen/NRR/NNH/lmp/53153/input.lammps", "plm": "/your_path/dpgen/NRR/NNH/lmp/53153/RuN4/Ruspsd.plumed" },
+            "rev_mat":{ "lmp": {"V_NSTEPS": [200000], "V_TEMP": [300], "V_PRES": [1]},
+                        "plm": {"V_TEMP":  [300], "V_STRIDE": [100]}
+                      }
+    }
+
+    ],
+
+    "fp_style":	       "cp2k",
+	"ratio_failed": 0.06,
+    "shuffle_poscar":	false,
+    "fp_task_max":	500,
+    "fp_task_min":	0,
+     "fp_pp_path":	".",
+    "fp_pp_files":	[],
+    "user_fp_params":   {
+       "GLOBAL": {
+           "PROJECT": "DPGEN",
+           "RUN_TYPE": "ENERGY_FORCE"
+         },
+         "FORCE_EVAL": {
+           "METHOD": "Quickstep",
+           "STRESS_TENSOR": "ANALYTICAL",
+           "DFT": {
+             "BASIS_SET_FILE_NAME": "BASIS_MOLOPT",
+             "POTENTIAL_FILE_NAME": "GTH_POTENTIALS",
+             "MULTIPLICITY": 2,
+             "UKS": " ",
+             "MGRID": {
+               "CUTOFF": 800,
+               "REL_CUTOFF": 40,
+               "NGRIDS": 20
+             },
+             "QS": {
+               "EPS_DEFAULT": "1.0E-11"
+             },
+             "SCF": {
+               "EPS_SCF": "3.0E-7",
+               "MAX_SCF": 128,
+               "DIAGONALIZATION": {
+                   "ALGORITHM": "STANDARD"
+               },
+               "MIXING":{ 
+                  "METHOD": "BROYDEN_MIXING",
+                  "ALPHA": 0.4,
+                  "NBROYDEN": 8
+                },
+               "SMEAR": {
+                  "METHOD": "FERMI_DIRAC",
+                  "ELECTRONIC_TEMPERATURE": 300
+                },
+                "ADDED_MOS": 150 
+ 
+             },
+             "XC": {
+               "XC_FUNCTIONAL": {"_": "PBE"},
+               "VDW_POTENTIAL":{
+                  "POTENTIAL_TYPE": "PAIR_POTENTIAL",        
+                  "PAIR_POTENTIAL":{
+                      "PARAMETER_FILE_NAME": "dftd3.dat",
+                      "TYPE": "DFTD3",
+                      "REFERENCE_FUNCTIONAL": "PBE"
+                  }
+                }
+             }
+           },
+           "SUBSYS": {
+               "CELL":{
+                   "A": "12.3302207 .0 .0",
+                   "B": ".0 12.8139416 .0",
+                   "C": ".0 .0 16"
+                   },
+               "KIND": {
+                 "_": ["H","O","N","C","Ru"],
+                 "BASIS_SET": ["DZVP-MOLOPT-SR-GTH-q1", "DZVP-MOLOPT-SR-GTH-q6", "DZVP-MOLOPT-SR-GTH-q5","DZVP-MOLOPT-SR-GTH-q4","DZVP-MOLOPT-SR-GTH-q16"],
+                 "POTENTIAL": ["GTH-PBE-q1", "GTH-PBE-q6", "GTH-PBE-q5", "GTH-PBE-q4", "GTH-PBE-q16"],
+                 "MAGNETIZATION": ["0.6", "0.6", "1", "0.6", "5"]
+                }
+                                       
+            },
+           "PRINT": {
+             "FORCES": {
+               "_": "ON"
+             }
+           }
+        }
+    }
+}
