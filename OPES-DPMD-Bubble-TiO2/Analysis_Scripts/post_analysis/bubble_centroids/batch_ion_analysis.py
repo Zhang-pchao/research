@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-批量分析离子距离分布的脚本
-读取多个时间段的离子距离数据，生成综合分布图、时间分组分布图和电荷分布图
-支持命令行参数指定输入路径和输出目录
+Script for batch analysis of ion distance distributions.
+Reads ion distance data across multiple time ranges to generate comprehensive distribution plots, time-grouped distributions, and charge distribution plots.
+Supports command-line arguments to specify the input path and output directory.
 """
 
 import os
@@ -10,29 +10,29 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')  # 使用非交互式后端
+matplotlib.use('Agg')  # Use a non-interactive backend
 from collections import defaultdict
 import re
 import glob
 import argparse
 
 class BatchIonAnalyzer:
-    """批量离子距离分析器"""
+    """Batch ion distance analyzer."""
     
     def __init__(self, base_dir="/home/pengchao/bubble_ion/TiO/dpmd/102n2_7401h2o_tio2_water_layer/4", output_dir=None):
         self.base_dir = base_dir
         
-        # 设置输出目录
+        # Configure the output directory
         if output_dir is None:
             self.output_dir = os.path.join(base_dir, "analysis_ion/centroids_density")
         else:
-            # 如果是相对路径，相对于base_dir；如果是绝对路径，直接使用
+            # If it is a relative path, resolve it relative to base_dir; otherwise use the absolute path directly
             if os.path.isabs(output_dir):
                 self.output_dir = output_dir
             else:
                 self.output_dir = os.path.join(base_dir, output_dir)
         
-        # 定义离子样式
+        # Define ion plotting styles
         self.ion_styles = {
             'H3O': {'color': '#1f77b4', 'marker': 'o', 'label': r'$\mathrm{H_3O^+}$'},
             'bulk_OH': {'color': '#ff7f0e', 'marker': 's', 'label': r'$\mathrm{OH^-(bulk)}$'},
@@ -42,7 +42,7 @@ class BatchIonAnalyzer:
             'Cl': {'color': '#8c564b', 'marker': 'p', 'label': r'$\mathrm{Cl^-}$'}
         }
         
-        # 定义离子电荷
+        # Define ion charges
         self.ion_charges = {
             'H3O': 1,
             'bulk_OH': -1,
@@ -52,11 +52,11 @@ class BatchIonAnalyzer:
             'Cl': -1
         }
         
-        # 创建输出目录
+        # Create the output directory
         os.makedirs(self.output_dir, exist_ok=True)
     
     def setup_nature_style(self):
-        """设置Nature期刊风格的matplotlib参数"""
+        """Configure matplotlib parameters in a Nature-style format."""
         plt.rcParams.update({
             'font.size': 12,
             'font.family': 'Arial',
@@ -83,7 +83,7 @@ class BatchIonAnalyzer:
         })
     
     def find_time_directories(self):
-        """查找所有时间段目录并按时间顺序排序"""
+        """Find all time-range directories and sort them chronologically."""
         pattern = re.compile(r'(\d+\.?\d*)-(\d+\.?\d*)ns')
         time_dirs = []
         
@@ -95,21 +95,21 @@ class BatchIonAnalyzer:
                 end_time = float(match.group(2))
                 time_dirs.append((start_time, end_time, item, item_path))
         
-        # 按开始时间排序
+        # Sort by the starting time
         time_dirs.sort(key=lambda x: x[0])
         
-        print(f"找到 {len(time_dirs)} 个时间段目录:")
+        print(f"Found {len(time_dirs)} time-range directories:")
         total_time = 0
         for start, end, dirname, _ in time_dirs:
             duration = end - start
             total_time += duration
-            print(f"  {dirname}: {start}-{end}ns (时长: {duration}ns)")
-        print(f"总模拟时间: {total_time}ns")
+            print(f"  {dirname}: {start}-{end}ns (duration: {duration}ns)")
+        print(f"Total simulation time: {total_time}ns")
         
         return time_dirs, total_time
     
     def read_ion_distances(self, time_dirs, centroids_subpath="centroids_density_2"):
-        """读取所有时间段的离子距离数据"""
+        """Read ion distance data for all time ranges."""
         all_ion_data = defaultdict(list)  # {ion_type: [(d_centroid, d_interface, time_period), ...]}
         time_grouped_data = defaultdict(lambda: defaultdict(list))  # {time_period: {ion_type: [(d_centroid, d_interface), ...]}}
         
@@ -117,155 +117,155 @@ class BatchIonAnalyzer:
             ions_analysis_dir = os.path.join(dir_path, f"{centroids_subpath}/ions_analysis")
             
             if not os.path.exists(ions_analysis_dir):
-                print(f"警告: {ions_analysis_dir} 不存在，跳过")
+                print(f"Warning: {ions_analysis_dir} does not exist, skipping")
                 continue
-            
-            print(f"处理时间段 {i+1}/{len(time_dirs)}: {dirname}")
-            
-            # 查找所有原始距离文件
+
+            print(f"Processing time range {i+1}/{len(time_dirs)}: {dirname}")
+
+            # Find all raw distance files
             distance_files = glob.glob(os.path.join(ions_analysis_dir, "raw_*_distances.txt"))
-            
+
             for file_path in distance_files:
-                # 从文件名提取离子类型
+                # Extract ion type from the filename
                 filename = os.path.basename(file_path)
                 ion_match = re.search(r'raw_(.+)_distances\.txt', filename)
                 if not ion_match:
                     continue
-                
+
                 ion_type = ion_match.group(1)
-                
-                # 读取数据
+
+                # Read the data
                 try:
-                    # 首先检查文件是否有有效数据
+                    # First check whether the file contains valid data
                     with open(file_path, 'r') as f:
                         lines = f.readlines()
-                    
-                    # 跳过头部，检查是否有数据行
+
+                    # Skip the header and check for data rows
                     data_lines = [line.strip() for line in lines[3:] if line.strip() and not line.startswith('#')]
-                    
+
                     if not data_lines:
-                        print(f"    跳过 {ion_type}: 文件中无数据（可能该体系不包含此离子）")
+                        print(f"    Skipping {ion_type}: no data in file (the system may not contain this ion)")
                         continue
-                    
-                    # 读取数值数据
+
+                    # Load numerical data
                     data = np.loadtxt(file_path, skiprows=3, dtype=float)
                     if data.size == 0:
-                        print(f"    跳过 {ion_type}: 无有效数值数据")
+                        print(f"    Skipping {ion_type}: no valid numerical data")
                         continue
-                    
+
                     if len(data.shape) == 1:
                         data = data.reshape(1, -1)
-                    
-                    print(f"    成功读取 {ion_type}: {len(data)} 个数据点")
-                    
-                    # 添加到总数据
+
+                    print(f"    Successfully read {ion_type}: {len(data)} data points")
+
+                    # Add to the aggregated dataset
                     for row in data:
-                        # 根据新的定义，d_interface是离子到最近的N原子的距离。
-                        # 本脚本假定上游数据生成过程已经更新，输入文件中的第二列即为这个新定义的值。
+                        # According to the new definition, d_interface is the distance from the ion to the nearest N atom.
+                        # This script assumes upstream data generation already adopts this definition, with column two containing it.
                         d_centroid, d_interface = row[0], row[1]
                         all_ion_data[ion_type].append((d_centroid, d_interface, i))
                         time_grouped_data[i][ion_type].append((d_centroid, d_interface))
-                
+
                 except Exception as e:
-                    print(f"    读取 {ion_type} 时出错: {e}")
-                    # 如果是Na或Cl离子，给出特殊提示
+                    print(f"    Error reading {ion_type}: {e}")
+                    # Provide a specific reminder for Na or Cl ions
                     if ion_type in ['Na', 'Cl']:
-                        print(f"      注意：某些体系可能不包含{ion_type}离子")
-        
-        # 输出实际找到的离子类型
+                        print(f"      Note: Some systems may not contain {ion_type} ions")
+
+        # Report which ion types were found
         found_ions = list(all_ion_data.keys())
         expected_ions = ['H3O', 'bulk_OH', 'surface_OH', 'surface_H', 'Na', 'Cl']
         missing_ions = [ion for ion in expected_ions if ion not in found_ions]
-        
-        print(f"\n数据读取总结:")
-        print(f"  成功读取的离子类型: {', '.join(found_ions) if found_ions else '无'}")
+
+        print(f"\nData loading summary:")
+        print(f"  Ion types successfully read: {', '.join(found_ions) if found_ions else 'None'}")
         if missing_ions:
-            print(f"  未找到数据的离子类型: {', '.join(missing_ions)}")
+            print(f"  Ion types without data: {', '.join(missing_ions)}")
             if 'Na' in missing_ions or 'Cl' in missing_ions:
-                print(f"  注意：此体系可能不包含NaCl离子")
-        
+                print(f"  Note: The system may not contain NaCl ions")
+
         return all_ion_data, time_grouped_data, len(time_dirs)
     
     def read_bubble_centroids(self, time_dirs, centroids_subpath="centroids_density_2"):
-        """读取所有时间段的气泡质心数据，获取BubbleSize时间演化"""
+        """Read bubble centroid data across all time ranges to obtain BubbleSize evolution."""
         all_bubble_data = []  # [(frame_index, time_ns, bubble_size, time_period_idx), ...]
         
         for i, (start_time, end_time, dirname, dir_path) in enumerate(time_dirs):
             centroids_file = os.path.join(dir_path, f"{centroids_subpath}/bubble_centroids.txt")
             
             if not os.path.exists(centroids_file):
-                print(f"警告: {centroids_file} 不存在，跳过")
+                print(f"Warning: {centroids_file} does not exist, skipping")
                 continue
-            
-            print(f"读取气泡数据 {i+1}/{len(time_dirs)}: {dirname}")
-            
+
+            print(f"Reading bubble data {i+1}/{len(time_dirs)}: {dirname}")
+
             try:
-                # 读取bubble_centroids.txt文件
-                data = np.loadtxt(centroids_file, skiprows=1)  # 跳过头部注释
-                
+                # Load the bubble_centroids.txt file
+                data = np.loadtxt(centroids_file, skiprows=1)  # Skip header comments
+
                 if data.size == 0:
-                    print(f"    警告: {centroids_file} 无数据")
+                    print(f"    Warning: {centroids_file} contains no data")
                     continue
-                
+
                 if len(data.shape) == 1:
                     data = data.reshape(1, -1)
-                
-                # 提取帧索引、时间和气泡大小数据
-                frame_indices = data[:, 0]  # FrameIndex列
-                times_ps_column = data[:, 1]  # Time(ps)列（实际是帧数×1000）
-                bubble_sizes = data[:, 5]  # BubbleSize列
-                
-                # 计算真实时间：每个时间段的起始时间 + 帧数×1ps
-                # 每个子文件夹的帧数从1开始，1ps per frame
-                times_ns = start_time + (frame_indices - 1) / 1000.0  # 转换为ns
-                
-                print(f"    成功读取: {len(frame_indices)} 个时间点")
-                print(f"    帧数范围: {frame_indices[0]:.0f} - {frame_indices[-1]:.0f}")
-                print(f"    时间范围: {times_ns[0]:.3f} - {times_ns[-1]:.3f} ns")
-                print(f"    气泡大小范围: {bubble_sizes[0]/2:.0f} - {bubble_sizes[-1]/2:.0f} 个N2分子")
-                
-                # 添加到总数据，记录时间段索引和绝对帧数
+
+                # Extract frame index, time, and bubble size data
+                frame_indices = data[:, 0]  # FrameIndex column
+                times_ps_column = data[:, 1]  # Time(ps) column (actually frame count × 1000)
+                bubble_sizes = data[:, 5]  # BubbleSize column
+
+                # Compute the real time: starting time + frames × 1 ps
+                # Each subdirectory starts frames from 1, 1 ps per frame
+                times_ns = start_time + (frame_indices - 1) / 1000.0  # Convert to ns
+
+                print(f"    Successfully read: {len(frame_indices)} time points")
+                print(f"    Frame range: {frame_indices[0]:.0f} - {frame_indices[-1]:.0f}")
+                print(f"    Time range: {times_ns[0]:.3f} - {times_ns[-1]:.3f} ns")
+                print(f"    Bubble size range: {bubble_sizes[0]/2:.0f} - {bubble_sizes[-1]/2:.0f} N2 molecules")
+
+                # Add to the aggregated data, recording the time-range index and absolute frame number
                 for frame_idx, time_ns, bubble_size in zip(frame_indices, times_ns, bubble_sizes):
-                    # 计算绝对帧数（跨所有时间段的连续帧数）
-                    absolute_frame = int(time_ns * 1000)  # 时间(ns) * 1000 = 绝对帧数
+                    # Compute the absolute frame number across all time ranges
+                    absolute_frame = int(time_ns * 1000)  # Time (ns) * 1000 = absolute frame index
                     all_bubble_data.append((absolute_frame, time_ns, bubble_size, i))
-            
+
             except Exception as e:
-                print(f"    读取 {centroids_file} 时出错: {e}")
-        
+                print(f"    Error reading {centroids_file}: {e}")
+
         if not all_bubble_data:
-            print("错误: 没有读取到任何气泡数据")
+            print("Error: No bubble data were read")
             return None
-        
-        # 按时间排序
-        all_bubble_data.sort(key=lambda x: x[1])  # 按时间ns排序
-        
-        print(f"\n气泡数据读取总结:")
-        print(f"  总时间点数: {len(all_bubble_data)}")
-        print(f"  时间范围: {all_bubble_data[0][1]:.3f} - {all_bubble_data[-1][1]:.3f} ns")
-        print(f"  帧数范围: {all_bubble_data[0][0]} - {all_bubble_data[-1][0]}")
-        print(f"  初始气泡大小: {all_bubble_data[0][2]/2:.0f} 个$\\mathrm{{N_2}}$分子")
-        print(f"  最终气泡大小: {all_bubble_data[-1][2]/2:.0f} 个$\\mathrm{{N_2}}$分子")
-        
-        # 按时间段统计
+
+        # Sort by time
+        all_bubble_data.sort(key=lambda x: x[1])  # Sort by time in ns
+
+        print(f"\nBubble data summary:")
+        print(f"  Total number of time points: {len(all_bubble_data)}")
+        print(f"  Time range: {all_bubble_data[0][1]:.3f} - {all_bubble_data[-1][1]:.3f} ns")
+        print(f"  Frame range: {all_bubble_data[0][0]} - {all_bubble_data[-1][0]}")
+        print(f"  Initial bubble size: {all_bubble_data[0][2]/2:.0f} $\\mathrm{{N_2}}$ molecules")
+        print(f"  Final bubble size: {all_bubble_data[-1][2]/2:.0f} $\\mathrm{{N_2}}$ molecules")
+
+        # Count the number of points per time range
         period_stats = defaultdict(int)
         for _, _, _, period_idx in all_bubble_data:
             period_stats[period_idx] += 1
-        
-        print(f"  各时间段数据点数:")
+
+        print(f"  Data points per time range:")
         for period_idx in sorted(period_stats.keys()):
             if period_idx < len(time_dirs):
                 dirname = time_dirs[period_idx][2]
-                print(f"    {dirname}: {period_stats[period_idx]} 个数据点")
-        
+                print(f"    {dirname}: {period_stats[period_idx]} data points")
+
         return all_bubble_data
 
     def save_plot_data(self, filename, headers, data_dict):
         """
-        保存绘图数据到文本文件
-        :param filename: 输出文件名
-        :param headers: 文件头注释信息 (list of strings)
-        :param data_dict: 包含绘图数据的字典, e.g., {'x_axis_label': x_data, 'y1_label': y1_data, ...}
+        Save plot data to a text file.
+        :param filename: Output file name
+        :param headers: Header comments (list of strings)
+        :param data_dict: Dictionary containing plot data, e.g., {'x_axis_label': x_data, 'y1_label': y1_data, ...}
         """
         try:
             with open(filename, 'w') as f:
@@ -275,13 +275,13 @@ class BatchIonAnalyzer:
                 column_labels = list(data_dict.keys())
                 f.write("# " + "\t".join(column_labels) + "\n")
                 
-                # 获取数据列并转置
+                # Retrieve data columns and transpose
                 columns = list(data_dict.values())
                 if not all(isinstance(c, np.ndarray) for c in columns):
-                     print(f"警告: {filename} 中并非所有数据列都是numpy数组，跳过保存。")
+                     print(f"Warning: not all data columns in {filename} are numpy arrays, skipping save.")
                      return
 
-                # 确保所有列长度相同，以最短的为准
+                # Ensure all columns share the same length, using the shortest as reference
                 min_len = min(len(col) for col in columns if col is not None)
                 
                 for i in range(min_len):
@@ -292,31 +292,31 @@ class BatchIonAnalyzer:
                         else:
                             line_parts.append("NaN")
                     f.write("\t".join(line_parts) + "\n")
-            print(f"绘图数据已保存: {filename}")
+            print(f"Plot data saved: {filename}")
         except Exception as e:
-            print(f"保存绘图数据到 {filename} 时出错: {e}")
+            print(f"Error saving plot data to {filename}: {e}")
 
     def plot_bubble_evolution(self, bubble_data, args):
-        """绘制气泡大小随时间的演化曲线"""
+        """Plot the evolution of bubble size over time."""
         if not bubble_data:
-            print("没有气泡数据可绘制演化曲线")
+            print("No bubble data available to plot the evolution curve")
             return None
-        
+
         self.setup_nature_style()
-        
-        # 提取数据
+
+        # Extract data
         frame_indices = [item[0] for item in bubble_data]
         times_ns = [item[1] for item in bubble_data]
-        bubble_sizes = [item[2] / 2 for item in bubble_data]  # 除以2转换为分子数
-        
-        # 计算百分比（相对于初始值）
+        bubble_sizes = [item[2] / 2 for item in bubble_data]  # Divide by 2 to convert to molecule count
+
+        # Compute the percentage relative to the initial size
         initial_size = bubble_sizes[0]
         bubble_percentages = [(size / initial_size) * 100 for size in bubble_sizes]
-        
-        # 创建图形
+
+        # Create the figure
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
-        
-        # 上图：绝对大小
+
+        # Upper plot: absolute size
         ax1.plot(times_ns, bubble_sizes, 'b-', linewidth=2, label=r'$\mathrm{N_2}$ molecules')
         ax1.set_xlabel('Time (ns)', fontsize=14)
         ax1.set_ylabel(r'Bubble Size ($\mathrm{N_2}$ molecules)', fontsize=14)
@@ -324,7 +324,7 @@ class BatchIonAnalyzer:
         ax1.grid(True, alpha=0.3)
         ax1.legend(frameon=False, fontsize=12)
         
-        # 下图：百分比
+        # Lower plot: percentage
         ax2.plot(times_ns, bubble_percentages, 'r-', linewidth=2, label='Bubble Size (%)')
         ax2.set_xlabel('Time (ns)', fontsize=14)
         ax2.set_ylabel('Bubble Size (%)', fontsize=14)
@@ -334,14 +334,14 @@ class BatchIonAnalyzer:
         
         plt.tight_layout()
         
-        # 保存图片
+        # Save the figure
         plot_file = os.path.join(self.output_dir, "bubble_size_evolution.png")
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
-        
-        print(f"气泡演化曲线图已保存: {plot_file}")
-        
-        # 保存演化数据
+
+        print(f"Bubble evolution plot saved: {plot_file}")
+
+        # Save evolution data
         data_file = os.path.join(self.output_dir, "data_bubble_evolution.txt")
         with open(data_file, 'w') as f:
             f.write("# Bubble size evolution data\n")
@@ -349,37 +349,37 @@ class BatchIonAnalyzer:
             f.write("# Note: Time = FrameIndex / 1000.0 (1ps per frame converted to ns)\n")
             for item in bubble_data:
                 frame_idx, time_ns, bubble_size_raw, period_idx = item
-                bubble_size_molecules = bubble_size_raw / 2  # 除以2转换为分子数
+                bubble_size_molecules = bubble_size_raw / 2  # Divide by 2 to convert to molecule count
                 percentage = (bubble_size_molecules / initial_size) * 100
                 f.write(f"{frame_idx}\t{time_ns:.3f}\t{bubble_size_molecules:.0f}\t{percentage:.2f}\t{period_idx}\n")
-        
-        print(f"气泡演化数据已保存: {data_file}")
-        
+
+        print(f"Bubble evolution data saved: {data_file}")
+
         return bubble_data
 
     def plot_timerange_ion_distributions(self, all_ion_data, time_range_ns, args):
-        """绘制指定时间范围内的离子距离分布图"""
-        print(f"生成 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围的离子分布图...")
-        
+        """Plot ion distance distributions within a specified time range."""
+        print(f"Generating ion distribution plots for {time_range_ns[0]}-{time_range_ns[1]} ns...")
+
         filtered_ion_data = defaultdict(list)
-        
-        # 建立时间段索引到实际时间范围的映射
+
+        # Build a mapping from time-range indices to actual ranges
         if not hasattr(self, '_time_dirs'):
-            print("错误: time_dirs 未初始化，无法按时间范围筛选")
+            print("Error: time_dirs is not initialized; cannot filter by time range")
             return
             
         for ion_type, data_list in all_ion_data.items():
             for d_centroid, d_interface, period_idx in data_list:
                 if period_idx < len(self._time_dirs):
                     start_time, end_time, _, _ = self._time_dirs[period_idx]
-                    # 检查时间段是否与指定范围有重叠
+                    # Check whether the time range overlaps with the requested window
                     if not (end_time < time_range_ns[0] or start_time > time_range_ns[1]):
                         filtered_ion_data[ion_type].append((d_centroid, d_interface))
-        
+
         if not filtered_ion_data:
-            print(f"警告: 在 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内没有找到离子数据")
+            print(f"Warning: No ion data found within {time_range_ns[0]}-{time_range_ns[1]} ns")
             return
-        
+
         self.setup_nature_style()
         
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(args.figsize_comprehensive[0], args.figsize_comprehensive[1]*1.5))
@@ -387,7 +387,7 @@ class BatchIonAnalyzer:
         bins = args.bins
         
         total_selected = sum(len(data) for data in filtered_ion_data.values())
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内的离子数据点: {total_selected}")
+        print(f"Ion data points within {time_range_ns[0]}-{time_range_ns[1]} ns: {total_selected}")
         
         all_centroids_filtered = []
         for ion_data in filtered_ion_data.values():
@@ -403,15 +403,15 @@ class BatchIonAnalyzer:
             if not data_list:
                 continue
             
-            print(f"  {ion_type}: {len(data_list)} 个数据点")
-            
+            print(f"  {ion_type}: {len(data_list)} data points")
+
             d_centroids = [item[0] for item in data_list]
             d_interfaces = [item[1] for item in data_list]
-            
+
             style = self.ion_styles.get(ion_type, {'color': 'black', 'marker': 'o', 'label': ion_type})
             ion_label_safe = style['label'].replace('$', '').replace('\\mathrm', '').replace('{', '').replace('}', '').replace('^', '').replace('_', '').replace('-', '(surf)')
-            
-            # === 密度归一化分布图 ===
+
+            # === Probability-normalized distributions ===
             hist_centroid, bin_edges_centroid = np.histogram(d_centroids, bins=bins, density=False)
             bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
             hist_centroid_norm = hist_centroid / np.sum(hist_centroid) * 100
@@ -428,7 +428,7 @@ class BatchIonAnalyzer:
                      marker=style['marker'], color=style['color'],
                      linewidth=2.0, markersize=4, alpha=0.8, label=style['label'])
             
-            # === 体积归一化分布图 ===
+            # === Volume-normalized distributions ===
             bin_width_centroid = bin_edges_centroid[1] - bin_edges_centroid[0]
             shell_volumes_centroid = 4 * np.pi * bin_centers_centroid**2 * bin_width_centroid
             shell_volumes_centroid = np.maximum(shell_volumes_centroid, 1e-10)
@@ -461,7 +461,7 @@ class BatchIonAnalyzer:
             data_centroid_vol[f'ProbVol_{ion_label_safe}(%/nm^3)'] = hist_centroid_vol
             data_interface_vol[f'ProbVol_{ion_label_safe}(%/nm^3)'] = hist_interface_vol
 
-        # 设置子图
+        # Configure subplots
         ax1.set_xlabel(r'$d_{\mathrm{centroid}}$ (Å)', fontsize=14)
         ax1.set_ylabel('Probability (%)', fontsize=14)
         ax1.set_title(f'Ion Distance to Bubble Centroid\n(Density Normalized, Time: {time_range_ns[0]}-{time_range_ns[1]} ns)', fontsize=14)
@@ -492,7 +492,7 @@ class BatchIonAnalyzer:
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
         
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 归一化离子分布图已保存: {plot_file}")
+        print(f"Normalized ion distribution plots saved for {time_range_ns[0]}-{time_range_ns[1]} ns: {plot_file}")
 
         # Save data to files
         time_str = f"{time_range_ns[0]}-{time_range_ns[1]}ns"
@@ -502,26 +502,26 @@ class BatchIonAnalyzer:
         self.save_plot_data(os.path.join(self.output_dir, f"data_ion_dist_interface_vol_{time_str}.txt"), [f"Ion dist to interface (Volume Norm) for {time_str}"], data_interface_vol)
 
     def plot_timerange_ion_distributions_absolute(self, all_ion_data, time_range_ns, args):
-        """绘制指定时间范围内的离子距离分布图（绝对数量，非归一化版本）"""
-        print(f"生成 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围的离子分布图（绝对数量）...")
+        """Plot ion distance distributions for a specific time range (absolute counts, non-normalized)."""
+        print(f"Generating ion distribution plots for {time_range_ns[0]}-{time_range_ns[1]} ns (absolute counts)...")
         
         filtered_ion_data = defaultdict(list)
         
-        # 建立时间段索引到实际时间范围的映射
+        # Build a mapping from time-range indices to actual ranges
         if not hasattr(self, '_time_dirs'):
-            print("错误: time_dirs 未初始化，无法按时间范围筛选")
+            print("Error: time_dirs is not initialized; cannot filter by time range")
             return
             
         for ion_type, data_list in all_ion_data.items():
             for d_centroid, d_interface, period_idx in data_list:
                 if period_idx < len(self._time_dirs):
                     start_time, end_time, _, _ = self._time_dirs[period_idx]
-                    # 检查时间段是否与指定范围有重叠
+                    # Check whether the time range overlaps with the requested window
                     if not (end_time < time_range_ns[0] or start_time > time_range_ns[1]):
                         filtered_ion_data[ion_type].append((d_centroid, d_interface))
-        
+
         if not filtered_ion_data:
-            print(f"警告: 在 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内没有找到离子数据")
+            print(f"Warning: No ion data found within {time_range_ns[0]}-{time_range_ns[1]} ns")
             return
         
         self.setup_nature_style()
@@ -531,22 +531,22 @@ class BatchIonAnalyzer:
         bins = args.bins
         
         total_selected = sum(len(data) for data in filtered_ion_data.values())
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内的离子数据点: {total_selected}")
+        print(f"Ion data points within {time_range_ns[0]}-{time_range_ns[1]} ns: {total_selected}")
         
-        # 计算时间范围内的总帧数（假设1ps per frame）
+        # Estimate the total number of frames within the time range (assuming 1 ps per frame)
         total_frames_in_range = 0
         for period_idx in range(len(self._time_dirs)):
             start_time, end_time, _, _ = self._time_dirs[period_idx]
-            # 检查时间段是否与指定范围有重叠
+            # Check whether the time range overlaps with the requested window
             if not (end_time < time_range_ns[0] or start_time > time_range_ns[1]):
-                # 计算重叠部分的时长
+                # Compute the duration of the overlap
                 overlap_start = max(start_time, time_range_ns[0])
                 overlap_end = min(end_time, time_range_ns[1])
                 overlap_duration_ns = overlap_end - overlap_start
-                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1ps per frame
+                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1 ps per frame
                 total_frames_in_range += frames_in_overlap
-        
-        print(f"时间范围内估计帧数: {total_frames_in_range}")
+
+        print(f"Estimated frames within the time range: {total_frames_in_range}")
         
         all_centroids_filtered = []
         for ion_data in filtered_ion_data.values():
@@ -562,7 +562,7 @@ class BatchIonAnalyzer:
             if not data_list:
                 continue
             
-            print(f"  {ion_type}: {len(data_list)} 个数据点")
+            print(f"  {ion_type}: {len(data_list)} data points")
             
             d_centroids = [item[0] for item in data_list]
             d_interfaces = [item[1] for item in data_list]
@@ -570,10 +570,10 @@ class BatchIonAnalyzer:
             style = self.ion_styles.get(ion_type, {'color': 'black', 'marker': 'o', 'label': ion_type})
             ion_label_safe = style['label'].replace('$', '').replace('\\mathrm', '').replace('{', '').replace('}', '').replace('^', '').replace('_', '').replace('-', '(surf)')
             
-            # === 绝对数量分布图（除以帧数得到每帧平均数量）===
+            # === Absolute count distributions (per-frame averages) ===
             hist_centroid, bin_edges_centroid = np.histogram(d_centroids, bins=bins, density=False)
             bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
-            # 除以帧数得到每帧平均数量
+            # Divide by frame count to obtain the per-frame average
             hist_centroid_per_frame = hist_centroid / max(total_frames_in_range, 1)
             
             ax1.plot(bin_centers_centroid, hist_centroid_per_frame,
@@ -582,14 +582,14 @@ class BatchIonAnalyzer:
             
             hist_interface, bin_edges_interface = np.histogram(d_interfaces, bins=bins, density=False)
             bin_centers_interface = (bin_edges_interface[:-1] + bin_edges_interface[1:]) / 2
-            # 除以帧数得到每帧平均数量
+            # Divide by frame count to obtain the per-frame average
             hist_interface_per_frame = hist_interface / max(total_frames_in_range, 1)
             
             ax2.plot(bin_centers_interface, hist_interface_per_frame,
                      marker=style['marker'], color=style['color'],
                      linewidth=2.0, markersize=4, alpha=0.8, label=style['label'])
             
-            # === 密度分布图（每帧平均数量/体积）===
+            # === Density distributions (per-frame average per volume) ===
             bin_width_centroid = bin_edges_centroid[1] - bin_edges_centroid[0]
             shell_volumes_centroid = 4 * np.pi * bin_centers_centroid**2 * bin_width_centroid
             shell_volumes_centroid = np.maximum(shell_volumes_centroid, 1e-10)
@@ -622,7 +622,7 @@ class BatchIonAnalyzer:
             data_centroid_density[f'Density_{ion_label_safe}(num/nm^3)'] = hist_centroid_density
             data_interface_density[f'Density_{ion_label_safe}(num/nm^3)'] = hist_interface_density
 
-        # 设置子图
+        # Configure subplots
         ax1.set_xlabel(r'$d_{\mathrm{centroid}}$ (Å)', fontsize=14)
         ax1.set_ylabel('Count', fontsize=14)
         ax1.set_title(f'Ion Count vs Distance to Bubble Centroid\n(Absolute Count, Time: {time_range_ns[0]}-{time_range_ns[1]} ns)', fontsize=14)
@@ -653,7 +653,7 @@ class BatchIonAnalyzer:
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
         
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 绝对数量离子分布图已保存: {plot_file}")
+        print(f"Absolute ion distribution plots saved for {time_range_ns[0]}-{time_range_ns[1]} ns: {plot_file}")
 
         # Save data to files
         time_str = f"{time_range_ns[0]}-{time_range_ns[1]}ns"
@@ -663,9 +663,9 @@ class BatchIonAnalyzer:
         self.save_plot_data(os.path.join(self.output_dir, f"data_ion_dist_interface_density_{time_str}.txt"), [f"Ion dist to interface (Density) for {time_str}"], data_interface_density)
 
     def plot_comprehensive_distributions(self, all_ion_data, total_time, args):
-        """绘制综合所有时间段的离子距离分布图"""
+        """Plot ion distance distributions aggregated across all time ranges."""
         if not all_ion_data:
-            print("没有离子数据可绘制综合分布图")
+            print("No ion data available to plot comprehensive distributions")
             return
         
         self.setup_nature_style()
@@ -694,7 +694,7 @@ class BatchIonAnalyzer:
             style = self.ion_styles.get(ion_type, {'color': 'black', 'marker': 'o', 'label': ion_type})
             ion_label_safe = style['label'].replace('$', '').replace('\\mathrm', '').replace('{', '').replace('}', '').replace('^', '').replace('_', '').replace('-', '(surf)')
 
-            # === 密度归一化 ===
+            # === Probability normalization ===
             hist_centroid, bin_edges_centroid = np.histogram(d_centroids, bins=bins, density=False)
             bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
             hist_centroid_norm = hist_centroid / np.sum(hist_centroid) * 100
@@ -711,7 +711,7 @@ class BatchIonAnalyzer:
                      marker=style['marker'], color=style['color'],
                      linewidth=2.0, markersize=4, alpha=0.8, label=style['label'])
             
-            # === 体积归一化 ===
+            # === Volume normalization ===
             bin_width_centroid = bin_edges_centroid[1] - bin_edges_centroid[0]
             shell_volumes_centroid = 4 * np.pi * bin_centers_centroid**2 * bin_width_centroid
             shell_volumes_centroid = np.maximum(shell_volumes_centroid, 1e-10)
@@ -774,7 +774,7 @@ class BatchIonAnalyzer:
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
         
-        print(f"归一化综合分布图已保存: {plot_file}")
+        print(f"Normalized comprehensive distribution plots saved: {plot_file}")
 
         # Save data to files
         self.save_plot_data(os.path.join(self.output_dir, "data_comprehensive_dist_centroid_prob.txt"), [f"Comprehensive ion dist to centroid (Density Norm)"], data_centroid_prob)
@@ -783,9 +783,9 @@ class BatchIonAnalyzer:
         self.save_plot_data(os.path.join(self.output_dir, "data_comprehensive_dist_interface_vol.txt"), [f"Comprehensive ion dist to interface (Volume Norm)"], data_interface_vol)
 
     def plot_time_grouped_distributions(self, time_grouped_data, num_time_periods, time_dirs, args):
-        """绘制按时间段分组的离子距离分布图（4个时间段，颜色由浅到深）"""
+        """Plot ion distance distributions grouped by time (four segments, colors from light to dark)."""
         if not time_grouped_data:
-            print("没有离子数据可绘制时间分组分布图")
+            print("No ion data available to plot time-grouped distributions")
             return
         
         self.setup_nature_style()
@@ -796,15 +796,15 @@ class BatchIonAnalyzer:
         if len(groups) > 4 and len(groups[-1]) < group_size / 2:
             groups[-2].extend(groups.pop())
         
-        print(f"将 {num_time_periods} 个时间段分成 {len(groups)} 组:")
+        print(f"Dividing {num_time_periods} time ranges into {len(groups)} groups:")
         for i, group in enumerate(groups):
             time_ranges = [f"{time_dirs[j][2]}" for j in group]
-            print(f"  组 {i+1}: {', '.join(time_ranges)}")
+            print(f"  Group {i+1}: {', '.join(time_ranges)}")
         
         all_ion_types = sorted({key for time_data in time_grouped_data.values() for key in time_data.keys()})
         
         if not all_ion_types:
-            print("没有找到离子数据")
+            print("No ion data found")
             return
         
         for ion_type in all_ion_types:
@@ -842,7 +842,7 @@ class BatchIonAnalyzer:
                 label = f"Time {group_idx+1}: {start_time:.1f}-{end_time:.1f} ns"
                 label_safe = label.replace(' ', '_').replace(':', '').replace('-', '_to_')
 
-                # === 密度归一化 ===
+                # === Probability normalization ===
                 hist_centroid, bin_edges_centroid = np.histogram(group_d_centroids, bins=bins, density=False)
                 bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
                 hist_centroid_norm = hist_centroid / np.sum(hist_centroid) * 100
@@ -853,7 +853,7 @@ class BatchIonAnalyzer:
                 hist_interface_norm = hist_interface / np.sum(hist_interface) * 100
                 ax2.plot(bin_centers_interface, hist_interface_norm, color=color, linewidth=2.5, label=label)
                 
-                # === 体积归一化 ===
+                # === Volume normalization ===
                 bin_width_centroid = bin_edges_centroid[1] - bin_edges_centroid[0]
                 shell_volumes_centroid = 4 * np.pi * bin_centers_centroid**2 * bin_width_centroid
                 shell_volumes_centroid = np.maximum(shell_volumes_centroid, 1e-10)
@@ -913,7 +913,7 @@ class BatchIonAnalyzer:
             plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
             plt.close()
             
-            print(f"{ion_type} 归一化时间演化分布图已保存: {plot_file}")
+            print(f"Normalized time-evolution distribution saved for {ion_type}: {plot_file}")
 
             # Save data
             self.save_plot_data(os.path.join(self.output_dir, f"data_time_evolution_{ion_type}_centroid_prob.txt"), [f"Time evolution for {ion_label_safe} dist to centroid (Density Norm)"], data_centroid_prob)
@@ -922,12 +922,12 @@ class BatchIonAnalyzer:
             self.save_plot_data(os.path.join(self.output_dir, f"data_time_evolution_{ion_type}_interface_vol.txt"), [f"Time evolution for {ion_label_safe} dist to interface (Volume Norm)"], data_interface_vol)
 
     def plot_charge_distributions(self, all_ion_data, time_range_ns, args):
-        """绘制指定时间范围内的累积电荷分布图"""
-        print(f"生成 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围的电荷分布图...")
+        """Plot cumulative charge distributions within a specified time range."""
+        print(f"Generating charge distribution plots for {time_range_ns[0]}-{time_range_ns[1]} ns...")
 
         filtered_ion_data = defaultdict(list)
         if not hasattr(self, '_time_dirs'):
-            print("错误: time_dirs 未初始化，无法按时间范围筛选")
+            print("Error: time_dirs is not initialized; cannot filter by time range")
             return
 
         for ion_type, data_list in all_ion_data.items():
@@ -938,39 +938,39 @@ class BatchIonAnalyzer:
                         filtered_ion_data[ion_type].append((d_centroid, d_interface))
 
         if not filtered_ion_data:
-            print(f"警告: 在 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内没有找到离子数据")
+            print(f"Warning: No ion data found within {time_range_ns[0]}-{time_range_ns[1]} ns")
             return
 
-        # 计算时间范围内的总帧数（假设1ps per frame）
+        # Estimate the total number of frames within the time range (assuming 1 ps per frame)
         total_frames_in_range = 0
         for period_idx in range(len(self._time_dirs)):
             start_time, end_time, _, _ = self._time_dirs[period_idx]
-            # 检查时间段是否与指定范围有重叠
+            # Check whether the time range overlaps with the requested window
             if not (end_time < time_range_ns[0] or start_time > time_range_ns[1]):
-                # 计算重叠部分的时长
+                # Compute the duration of the overlap
                 overlap_start = max(start_time, time_range_ns[0])
                 overlap_end = min(end_time, time_range_ns[1])
                 overlap_duration_ns = overlap_end - overlap_start
-                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1ps per frame
+                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1 ps per frame
                 total_frames_in_range += frames_in_overlap
-        
-        print(f"时间范围内估计帧数: {total_frames_in_range}")
+
+        print(f"Estimated frames within the time range: {total_frames_in_range}")
 
         self.setup_nature_style()
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(args.figsize_comprehensive[0], args.figsize_comprehensive[1]*1.5))
         bins = args.bins
         
-        # 确定所有数据的范围以使用相同的binning
+        # Determine the data range to apply consistent binning
         all_d_centroids = [d[0] for data in filtered_ion_data.values() for d in data]
         all_d_interfaces = [d[1] for data in filtered_ion_data.values() for d in data]
         if not all_d_centroids:
-            print("警告: 筛选后无数据点，无法生成电荷分布图")
+            print("Warning: No data points after filtering; cannot generate charge distribution plot")
             return
             
         range_centroid = (np.min(all_d_centroids), np.max(all_d_centroids))
         range_interface = (np.min(all_d_interfaces), np.max(all_d_interfaces))
 
-        # 初始化总电荷直方图
+        # Initialize charge histograms
         total_charge_centroid = np.zeros(bins)
         total_charge_interface = np.zeros(bins)
         bulk_only_charge_centroid = np.zeros(bins)
@@ -987,7 +987,7 @@ class BatchIonAnalyzer:
             d_centroids = [item[0] for item in data_list]
             d_interfaces = [item[1] for item in data_list]
 
-            # 计算离子数直方图并乘以电荷，然后除以总帧数得到每帧平均电荷
+            # Compute ion histograms, multiply by charge, then divide by total frames to obtain per-frame charge
             hist_centroid, bin_edges_centroid = np.histogram(d_centroids, bins=bins, range=range_centroid)
             charge_per_frame_centroid = hist_centroid * charge / max(total_frames_in_range, 1)
             total_charge_centroid += charge_per_frame_centroid
@@ -996,21 +996,21 @@ class BatchIonAnalyzer:
             charge_per_frame_interface = hist_interface * charge / max(total_frames_in_range, 1)
             total_charge_interface += charge_per_frame_interface
 
-            # 计算仅包含体相离子的电荷
+            # Compute charges considering bulk ions only
             if ion_type not in ['surface_H', 'surface_OH']:
                 bulk_only_charge_centroid += charge_per_frame_centroid
                 bulk_only_charge_interface += charge_per_frame_interface
 
-        # 绘制非体积归一化图
+        # Plot non-volume-normalized curves
         bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
         ax1.plot(bin_centers_centroid, total_charge_centroid, color='k', linewidth=2.5, label='All Ions')
         ax1.plot(bin_centers_centroid, bulk_only_charge_centroid, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
-        
+
         bin_centers_interface = (bin_edges_interface[:-1] + bin_edges_interface[1:]) / 2
         ax2.plot(bin_centers_interface, total_charge_interface, color='k', linewidth=2.5, label='All Ions')
         ax2.plot(bin_centers_interface, bulk_only_charge_interface, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
 
-        # 绘制体积归一化图
+        # Plot volume-normalized curves
         bin_width_centroid = bin_edges_centroid[1] - bin_edges_centroid[0]
         shell_volumes_centroid = 4 * np.pi * bin_centers_centroid**2 * bin_width_centroid
         shell_volumes_centroid = np.maximum(shell_volumes_centroid, 1e-10)
@@ -1029,7 +1029,7 @@ class BatchIonAnalyzer:
         ax4.plot(bin_centers_interface, charge_density_interface, color='k', linewidth=2.5, label='All Ions')
         ax4.plot(bin_centers_interface, charge_density_interface_bulk, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
 
-        # 设置子图
+        # Configure subplots
         title_suffix = f"\n(Time: {time_range_ns[0]}-{time_range_ns[1]} ns)"
         ax1.set_xlabel(r'$d_{\mathrm{centroid}}$ (Å)', fontsize=14)
         ax1.set_ylabel('Net Charge per Frame (e)', fontsize=14)
@@ -1061,7 +1061,7 @@ class BatchIonAnalyzer:
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
         
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 电荷分布图已保存: {plot_file}")
+        print(f"Charge distribution plots saved for {time_range_ns[0]}-{time_range_ns[1]} ns: {plot_file}")
 
         # Save data
         time_str = f"{time_range_ns[0]}-{time_range_ns[1]}ns"
@@ -1084,12 +1084,12 @@ class BatchIonAnalyzer:
         self.save_plot_data(os.path.join(self.output_dir, f"data_charge_dist_interface_{time_str}.txt"), [f"Charge dist vs d_interface for {time_str} (per frame average)", f"Total frames in range: {total_frames_in_range}"], data_to_save_interface)
 
     def plot_cumulative_charge_distributions(self, all_ion_data, time_range_ns, args):
-        """绘制指定时间范围内的累积电荷分布图（从最小值累加到当前位置）"""
-        print(f"生成 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围的累积电荷分布图...")
+        """Plot cumulative charge distributions (integrated from the minimum distance to the current position)."""
+        print(f"Generating cumulative charge distribution plots for {time_range_ns[0]}-{time_range_ns[1]} ns...")
 
         filtered_ion_data = defaultdict(list)
         if not hasattr(self, '_time_dirs'):
-            print("错误: time_dirs 未初始化，无法按时间范围筛选")
+            print("Error: time_dirs is not initialized; cannot filter by time range")
             return
 
         for ion_type, data_list in all_ion_data.items():
@@ -1100,39 +1100,39 @@ class BatchIonAnalyzer:
                         filtered_ion_data[ion_type].append((d_centroid, d_interface))
 
         if not filtered_ion_data:
-            print(f"警告: 在 {time_range_ns[0]}-{time_range_ns[1]} ns 时间范围内没有找到离子数据")
+            print(f"Warning: No ion data found within {time_range_ns[0]}-{time_range_ns[1]} ns")
             return
 
-        # 计算时间范围内的总帧数（假设1ps per frame）
+        # Estimate the total number of frames within the time range (assuming 1 ps per frame)
         total_frames_in_range = 0
         for period_idx in range(len(self._time_dirs)):
             start_time, end_time, _, _ = self._time_dirs[period_idx]
-            # 检查时间段是否与指定范围有重叠
+            # Check whether the time range overlaps with the requested window
             if not (end_time < time_range_ns[0] or start_time > time_range_ns[1]):
-                # 计算重叠部分的时长
+                # Compute the duration of the overlap
                 overlap_start = max(start_time, time_range_ns[0])
                 overlap_end = min(end_time, time_range_ns[1])
                 overlap_duration_ns = overlap_end - overlap_start
-                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1ps per frame
+                frames_in_overlap = int(overlap_duration_ns * 1000)  # 1 ps per frame
                 total_frames_in_range += frames_in_overlap
         
-        print(f"时间范围内估计帧数: {total_frames_in_range}")
+        print(f"Estimated frames within the time range: {total_frames_in_range}")
 
         self.setup_nature_style()
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(args.figsize_comprehensive[0], args.figsize_comprehensive[1]*1.5))
         bins = args.bins
         
-        # 确定所有数据的范围以使用相同的binning
+        # Determine the data range to apply consistent binning
         all_d_centroids = [d[0] for data in filtered_ion_data.values() for d in data]
         all_d_interfaces = [d[1] for data in filtered_ion_data.values() for d in data]
         if not all_d_centroids:
-            print("警告: 筛选后无数据点，无法生成累积电荷分布图")
+            print("Warning: No data points after filtering; cannot generate cumulative charge plot")
             return
             
         range_centroid = (np.min(all_d_centroids), np.max(all_d_centroids))
         range_interface = (np.min(all_d_interfaces), np.max(all_d_interfaces))
 
-        # 初始化总电荷直方图
+        # Initialize charge histograms
         total_charge_centroid = np.zeros(bins)
         total_charge_interface = np.zeros(bins)
         bulk_only_charge_centroid = np.zeros(bins)
@@ -1149,7 +1149,7 @@ class BatchIonAnalyzer:
             d_centroids = [item[0] for item in data_list]
             d_interfaces = [item[1] for item in data_list]
 
-            # 计算离子数直方图并乘以电荷，然后除以总帧数得到每帧平均电荷
+            # Compute ion histograms, multiply by charge, then divide by total frames to obtain per-frame charge
             hist_centroid, bin_edges_centroid = np.histogram(d_centroids, bins=bins, range=range_centroid)
             charge_per_frame_centroid = hist_centroid * charge / max(total_frames_in_range, 1)
             total_charge_centroid += charge_per_frame_centroid
@@ -1158,18 +1158,18 @@ class BatchIonAnalyzer:
             charge_per_frame_interface = hist_interface * charge / max(total_frames_in_range, 1)
             total_charge_interface += charge_per_frame_interface
 
-            # 计算仅包含体相离子的电荷
+            # Compute charges considering bulk ions only
             if ion_type not in ['surface_H', 'surface_OH']:
                 bulk_only_charge_centroid += charge_per_frame_centroid
                 bulk_only_charge_interface += charge_per_frame_interface
 
-        # 计算累积电荷（从最小值累加到当前位置）
+        # Calculate cumulative charge (integrated from the minimum distance to the current position)
         cumulative_charge_centroid_all = np.cumsum(total_charge_centroid)
         cumulative_charge_centroid_bulk = np.cumsum(bulk_only_charge_centroid)
         cumulative_charge_interface_all = np.cumsum(total_charge_interface)
         cumulative_charge_interface_bulk = np.cumsum(bulk_only_charge_interface)
 
-        # 绘制累积电荷图（非体积归一化）
+        # Plot cumulative charge without volume normalization
         bin_centers_centroid = (bin_edges_centroid[:-1] + bin_edges_centroid[1:]) / 2
         ax1.plot(bin_centers_centroid, cumulative_charge_centroid_all, color='k', linewidth=2.5, label='All Ions')
         ax1.plot(bin_centers_centroid, cumulative_charge_centroid_bulk, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
@@ -1180,8 +1180,8 @@ class BatchIonAnalyzer:
         ax2.plot(bin_centers_interface, cumulative_charge_interface_bulk, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
         ax2.axhline(y=0, color='gray', linestyle=':', linewidth=1.0, alpha=0.5)
 
-        # 计算累积球体体积（从中心到当前半径的体积）
-        # 对于d_centroid: 球体体积 = 4/3 * π * r^3
+        # Calculate cumulative spherical volume from the center to the current radius
+        # For d_centroid: sphere volume = 4/3 * π * r^3
         cumulative_volumes_centroid = (4.0/3.0) * np.pi * bin_centers_centroid**3
         cumulative_volumes_centroid = np.maximum(cumulative_volumes_centroid, 1e-10)
         cumulative_charge_density_centroid_all = cumulative_charge_centroid_all / cumulative_volumes_centroid
@@ -1191,9 +1191,9 @@ class BatchIonAnalyzer:
         ax3.plot(bin_centers_centroid, cumulative_charge_density_centroid_bulk, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
         ax3.axhline(y=0, color='gray', linestyle=':', linewidth=1.0, alpha=0.5)
 
-        # 对于d_interface: 从气泡表面到当前距离的体积（等效球壳从R到R+d的体积）
+        # For d_interface: volume from the bubble surface to the current distance (spherical shell from R to R+d)
         avg_bubble_radius = np.mean(all_d_centroids)
-        # 累积体积 = 4/3*π*[(R+d)^3 - R^3]
+        # Cumulative volume = 4/3*π*[(R+d)^3 - R^3]
         outer_radii = avg_bubble_radius + bin_centers_interface
         cumulative_volumes_interface = (4.0/3.0) * np.pi * (outer_radii**3 - avg_bubble_radius**3)
         cumulative_volumes_interface = np.maximum(cumulative_volumes_interface, 1e-10)
@@ -1204,7 +1204,7 @@ class BatchIonAnalyzer:
         ax4.plot(bin_centers_interface, cumulative_charge_density_interface_bulk, color='r', linestyle='--', linewidth=2.0, label='Bulk Ions Only')
         ax4.axhline(y=0, color='gray', linestyle=':', linewidth=1.0, alpha=0.5)
 
-        # 设置子图
+        # Configure subplots
         title_suffix = f"\n(Time: {time_range_ns[0]}-{time_range_ns[1]} ns)"
         ax1.set_xlabel(r'$d_{\mathrm{centroid}}$ (Å)', fontsize=14)
         ax1.set_ylabel('Cumulative Net Charge per Frame (e)', fontsize=14)
@@ -1236,7 +1236,7 @@ class BatchIonAnalyzer:
         plt.savefig(plot_file, dpi=args.dpi, bbox_inches='tight', facecolor='white')
         plt.close()
         
-        print(f"{time_range_ns[0]}-{time_range_ns[1]} ns 累积电荷分布图已保存: {plot_file}")
+        print(f"Cumulative charge distribution plots saved for {time_range_ns[0]}-{time_range_ns[1]} ns: {plot_file}")
 
         # Save data
         time_str = f"{time_range_ns[0]}-{time_range_ns[1]}ns"
@@ -1259,7 +1259,7 @@ class BatchIonAnalyzer:
         self.save_plot_data(os.path.join(self.output_dir, f"data_cumulative_charge_dist_interface_{time_str}.txt"), [f"Cumulative charge dist vs d_interface for {time_str} (per frame average)", f"Total frames in range: {total_frames_in_range}", f"Average bubble radius: {avg_bubble_radius:.2f} A", f"Note: Cumulative from bubble surface to current distance"], data_to_save_interface)
 
     def run_analysis(self, args=None):
-        """运行完整的批量分析"""
+        """Run the complete batch analysis."""
         if args is None:
             args = type('DefaultArgs', (), {
                 'bins': 50, 'dpi': 300,
@@ -1268,63 +1268,63 @@ class BatchIonAnalyzer:
                 'figsize_combined': [24, 10]
             })()
         
-        print("开始批量离子距离分布分析...")
-        print(f"基础目录: {self.base_dir}")
-        print(f"输出目录: {self.output_dir}")
+        print("Starting batch ion distance distribution analysis...")
+        print(f"Base directory: {self.base_dir}")
+        print(f"Output directory: {self.output_dir}")
         print("="*60)
         
         time_dirs, total_time = self.find_time_directories()
         if not time_dirs:
-            print("错误: 没有找到任何时间段目录")
+            print("Error: No time-range directories were found")
             return
         
-        self._time_dirs = time_dirs # 保存供后续使用
+        self._time_dirs = time_dirs # Store for later use
         
         print("="*60)
         
-        print("读取气泡质心数据...")
+        print("Reading bubble centroid data...")
         bubble_data = self.read_bubble_centroids(time_dirs, centroids_subpath=args.centroids_subpath)
         
         print("="*60)
 
-        print("读取离子距离数据...")
+        print("Reading ion distance data...")
         all_ion_data, time_grouped_data, num_time_periods = self.read_ion_distances(time_dirs, centroids_subpath=args.centroids_subpath)
         
         if not all_ion_data:
-            print("错误: 没有读取到任何离子数据")
-            # 即使没有离子数据，也可能需要处理气泡数据
+            print("Error: No ion data were read")
+            # Even without ion data, bubble data may still need processing
             if bubble_data:
                 print("="*60)
-                print("分析气泡大小演化...")
+                print("Analyzing bubble size evolution...")
                 self.plot_bubble_evolution(bubble_data, args)
             return
         
         print("="*60)
         
-        print("数据统计:")
+        print("Data summary:")
         total_points = sum(len(data) for data in all_ion_data.values())
         for ion_type, data_list in all_ion_data.items():
-            print(f"  {ion_type}: {len(data_list)} 个数据点")
-        print(f"总数据点: {total_points}")
+            print(f"  {ion_type}: {len(data_list)} data points")
+        print(f"Total data points: {total_points}")
         print("="*60)
         
-        print("生成综合分布图...")
+        print("Generating comprehensive distribution plots...")
         self.plot_comprehensive_distributions(all_ion_data, total_time, args)
         
         print("="*60)
         
-        print("生成时间演化分布图...")
+        print("Generating time-evolution distribution plots...")
         self.plot_time_grouped_distributions(time_grouped_data, num_time_periods, time_dirs, args)
         
         print("="*60)
 
         if bubble_data:
-            print("分析气泡大小演化...")
+            print("Analyzing bubble size evolution...")
             self.plot_bubble_evolution(bubble_data, args)
         
         print("="*60)
         
-        # 生成指定时间范围的离子和电荷分布图
+        # Generate ion and charge distribution plots for the specified time ranges
         time_range_for_specific_plots = (args.time_range_start, args.time_range_end)
         self.plot_timerange_ion_distributions(all_ion_data, time_range_for_specific_plots, args)
         self.plot_timerange_ion_distributions_absolute(all_ion_data, time_range_for_specific_plots, args)
@@ -1332,95 +1332,95 @@ class BatchIonAnalyzer:
         self.plot_cumulative_charge_distributions(all_ion_data, time_range_for_specific_plots, args)
 
         print("="*60)
-        print("批量分析完成！")
-        print(f"输出文件保存在: {self.output_dir}")
-        print("\n生成的文件类型:")
-        print("  图片文件 (.png):")
-        print("  - comprehensive_ion_distributions_normalized.png: 综合所有时间段的离子分布图")
-        print("  - time_evolution_normalized_[ion_type]_distributions.png: 各离子类型的时间演化分布图")
-        print(f"  - ion_distributions_normalized_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: 特定时间段离子分布图（归一化）")
-        print(f"  - ion_distributions_absolute_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: 特定时间段离子分布图（绝对数量）")
-        print(f"  - charge_distributions_normalized_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: 每个bin内的电荷分布图")
-        print(f"  - cumulative_charge_distributions_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: 累积电荷分布图（从最小距离累加）")
+        print("Batch analysis complete!")
+        print(f"Output files saved in: {self.output_dir}")
+        print("\nGenerated file types:")
+        print("  Image files (.png):")
+        print("  - comprehensive_ion_distributions_normalized.png: Ion distributions across all time ranges")
+        print("  - time_evolution_normalized_[ion_type]_distributions.png: Time-evolution distributions for each ion type")
+        print(f"  - ion_distributions_normalized_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: Ion distributions for the specified time range (normalized)")
+        print(f"  - ion_distributions_absolute_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: Ion distributions for the specified time range (absolute counts)")
+        print(f"  - charge_distributions_normalized_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: Charge distributions per bin")
+        print(f"  - cumulative_charge_distributions_{time_range_for_specific_plots[0]}-{time_range_for_specific_plots[1]}ns.png: Cumulative charge distributions (integrated from the minimum distance)")
         if bubble_data:
-            print("  - bubble_size_evolution.png: 气泡大小随时间演化图")
+            print("  - bubble_size_evolution.png: Bubble size evolution plot")
         
-        print("\n  数据文件 (.txt):")
-        print("  - data_*.txt: 每个图片文件对应的原始绘图数据")
+        print("\n  Data files (.txt):")
+        print("  - data_*.txt: Source data for each plot")
 
 def get_args():
-    """获取命令行参数"""
-    parser = argparse.ArgumentParser(description='批量分析离子距离分布的脚本')
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description='Batch analysis script for ion distance distributions')
     
     parser.add_argument('--base_path', 
                         default='/home/pengchao/bubble_ion/TiO/dpmd/102n2_7401h2o_tio2_water_layer/4',
-                        help='基础目录路径，包含所有时间段子目录的父目录')
+                        help='Base directory containing subdirectories for each time range')
     
     parser.add_argument('--output_dir', 
                         default=None,
-                        help='输出目录路径。如果不指定，默认为base_path/analysis_ion/centroids_density')
+                        help='Output directory path. Defaults to base_path/analysis_ion/centroids_density if omitted')
     
     parser.add_argument('--bins', 
                         type=int, 
                         default=50,
-                        help='直方图分箱数量 (默认: 50)')
+                        help='Number of histogram bins (default: 50)')
     
     parser.add_argument('--dpi', 
                         type=int, 
                         default=300,
-                        help='输出图片的DPI (默认: 300)')
+                        help='Output image DPI (default: 300)')
     
     parser.add_argument('--figsize_comprehensive', 
                         nargs=2, 
                         type=float, 
                         default=[20, 8],
-                        help='综合分布图的尺寸 (宽度 高度) (默认: 20 8)')
+                        help='Figure size for comprehensive plots (width height) (default: 20 8)')
     
     parser.add_argument('--figsize_evolution', 
                         nargs=2, 
                         type=float, 
                         default=[20, 8],
-                        help='时间演化图的尺寸 (宽度 高度) (默认: 20 8)')
+                        help='Figure size for time-evolution plots (width height) (default: 20 8)')
     
     parser.add_argument('--figsize_combined', 
                         nargs=2, 
                         type=float, 
                         default=[24, 10],
-                        help='合并时间演化图的尺寸 (宽度 高度) (默认: 24 10)')
+                        help='Figure size for combined time-evolution plots (width height) (default: 24 10)')
     
     parser.add_argument('--centroids_subpath',
                         default='centroids_density_2',
-                        help='气泡质心文件的子路径 (默认: centroids_density_2)')
+                        help='Subpath to the bubble centroid files (default: centroids_density_2)')
     
     parser.add_argument('--time_range_start',
                         type=float,
                         default=2.0,
-                        help='特定时间范围图的起始时间 (ns) (默认: 2.0)')
+                        help='Start time (ns) for specific-range plots (default: 2.0)')
     
     parser.add_argument('--time_range_end',
                         type=float,
                         default=5.0,
-                        help='特定时间范围图的结束时间 (ns) (默认: 5.0)')
+                        help='End time (ns) for specific-range plots (default: 5.0)')
     
     return parser.parse_args()
 
 def main():
-    """主函数"""
+    """Main function."""
     args = get_args()
     
     if not os.path.isdir(args.base_path):
-        print(f"错误: 基础目录 {args.base_path} 不是一个有效的目录")
+        print(f"Error: base directory {args.base_path} is not valid")
         sys.exit(1)
     
     analyzer = BatchIonAnalyzer(base_dir=args.base_path, output_dir=args.output_dir)
     
     print("="*60)
-    print("批量离子距离分布分析")
+    print("Batch ion distance distribution analysis")
     print("="*60)
-    print(f"输入目录: {args.base_path}")
-    print(f"输出目录: {analyzer.output_dir}")
-    print(f"图片参数: DPI={args.dpi}, 分箱数={args.bins}")
-    print(f"图片尺寸: 综合图{args.figsize_comprehensive}, 演化图{args.figsize_evolution}, 合并图{args.figsize_combined}")
+    print(f"Input directory: {args.base_path}")
+    print(f"Output directory: {analyzer.output_dir}")
+    print(f"Image parameters: DPI={args.dpi}, bins={args.bins}")
+    print(f"Figure sizes: comprehensive={args.figsize_comprehensive}, evolution={args.figsize_evolution}, combined={args.figsize_combined}")
     print("="*60)
     
     analyzer.run_analysis(args)
