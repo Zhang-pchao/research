@@ -2,7 +2,7 @@
 
 This repository directory collects the in-house Python utilities that were used
 to analyze OPES-DPMD simulations of nitrogen bubbles interacting with a
-TiO$_2$ surface.  The scripts are grouped under
+TiO2 surface.  The scripts are grouped under
 [`Analysis_Scripts`](Analysis_Scripts) and split into the two main stages of
 our workflow:
 
