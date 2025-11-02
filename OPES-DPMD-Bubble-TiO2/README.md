@@ -1,4 +1,4 @@
-# OPES-DPMD Bubble TiO$_2$ Analysis Toolkit
+# OPES-DPMD Bubble TiO2 Analysis Toolkit
 
 This repository directory collects the in-house Python utilities that were used
 to analyze OPES-DPMD simulations of nitrogen bubbles interacting with a
