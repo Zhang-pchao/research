@@ -1,0 +1,32 @@
+tolerance 2.0
+
+output 189C2H6O_600N2_5500H2O_1.pdb
+
+filetype pdb
+
+seed -1
+
+structure /home/pengchao/packmol/geo/ethanol.pdb
+   number 94
+   inside box 0.5 0.5 0.5 39.5 39.5 56.8
+end structure
+
+structure /home/pengchao/packmol/geo/ethanol.pdb
+   number 95
+   inside box 0.5 0.5 102.5 39.5 39.5 158.8
+end structure
+
+structure /home/pengchao/packmol/geo/N2.pdb
+   number 600
+   inside box 0.5 0.5 57.8 39.5 39.5 101.5
+end structure
+
+structure /home/pengchao/packmol/geo/H2O.pdb
+   number 2750
+   inside box 0.5 0.5 0.5 39.5 39.5 56.8
+end structure
+
+structure /home/pengchao/packmol/geo/H2O.pdb
+   number 2750
+   inside box 0.5 0.5 102.5 39.5 39.5 158.8
+end structure

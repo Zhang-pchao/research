@@ -1,0 +1,13 @@
+#include "amber14sb_parmbsc1.ff/forcefield.itp"
+#include "amber14sb_parmbsc1.ff/spce.itp"
+#include "ethanol.itp"
+#include "N2.itp"
+
+[ system ]
+ethanol+N2+water
+
+[ molecules ]
+; Compound        nmols
+ethanol  189
+N2   600
+SOL  5500 

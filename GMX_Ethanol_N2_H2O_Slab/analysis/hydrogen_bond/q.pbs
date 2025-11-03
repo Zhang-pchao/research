@@ -1,0 +1,7 @@
+#!/bin/bash
+
+module purge
+module load anaconda/anaconda.2020.02
+source activate mdanalysis
+
+python ethanol_hb_total.py

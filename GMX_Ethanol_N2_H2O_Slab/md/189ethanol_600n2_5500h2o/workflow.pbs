@@ -1,0 +1,134 @@
+#!/bin/bash
+#PBS -q normal3
+#PBS -N eth189
+#PBS -l nodes=1:ppn=24
+#PBS -l walltime=1000:00:00
+
+# 强化调试模式
+set -eo pipefail  # 任何命令失败时退出
+set -x            # 输出每条执行的命令，便于调试
+
+# 路径配置
+ROOT_DIR="$PBS_O_WORKDIR"
+STATE_FILE="$ROOT_DIR/simulation.state"
+LOG_FILE="$ROOT_DIR/simulation.log"
+WORK_DIR="$ROOT_DIR"
+SRC_DIR="$ROOT_DIR/org_files"
+PDB_FILE="$ROOT_DIR/packmol/189C2H6O_600N2_5500H2O_1.pdb"
+
+# 初始化日志，重定向所有输出到日志文件
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+# 环境初始化函数
+init_env() {
+    echo "===== 环境初始化 ====="
+    module purge
+    module load intel/parallel_studio_xe_2017.0.035
+    module load anaconda/anaconda.2020.02
+    source activate plumed_2.8.1 || { echo "错误：无法激活conda环境"; exit 1; }
+    source /home/pengchao/App/GROMACS/gmx2018.8_mpi/bin/GMXRC || { echo "错误：无法加载GMXRC"; exit 1; }
+    command -v gmx_mpi >/dev/null 2>&1 || { echo "错误：gmx_mpi不可用"; exit 1; }
+    echo "环境初始化成功，gmx_mpi命令可用"
+}
+
+# 状态管理函数
+check_state() {
+    echo "===== 状态检查 ====="
+    if [[ -f "$STATE_FILE" ]]; then
+        LAST_STEP=$(cat "$STATE_FILE" | tr -d '\n')  # 读取状态并移除换行符
+        [[ -z "$LAST_STEP" ]] && LAST_STEP="init"
+    else
+        LAST_STEP="init"
+        echo "init" > "$STATE_FILE"
+    fi
+    echo "当前状态: [$LAST_STEP]"
+    return 0
+}
+
+update_state() {
+    local step="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - 完成步骤: $step" | tee -a "$LOG_FILE"
+    echo "$step" > "$STATE_FILE"
+}
+
+# 文件验证函数
+validate_file() {
+    local file="$1"
+    [[ ! -s "$file" ]] && { echo "错误：文件 $file 缺失或为空"; exit 1; }
+    echo "文件验证通过: $file"
+}
+
+# 执行命令函数
+run_command() {
+    local cmd="$1"
+    echo "执行命令: $cmd"
+    eval "$cmd"
+    [[ $? -ne 0 ]] && { echo "错误：命令执行失败: $cmd"; exit 1; }
+    echo "命令执行成功: $cmd"
+}
+
+# 主流程
+main() {
+    init_env
+    cd "$WORK_DIR" || { echo "错误：无法进入工作目录 $WORK_DIR"; exit 1; }
+
+    # 步骤1: 文件准备
+    check_state
+    if [[ "$LAST_STEP" == "init" ]]; then
+        echo "***** 执行文件准备步骤 *****"
+        run_command "cp -v $SRC_DIR/{em.mdp,prod.mdp,eq.mdp,ethanol.itp,N2.itp,mix.top} ./"
+        [[ ! -f mix.pdb ]] && run_command "cp -v $PDB_FILE ./mix.pdb"
+        validate_file "mix.pdb"
+        update_state "prepared"
+    fi
+
+    # 步骤2: 能量最小化
+    check_state
+    if [[ "$LAST_STEP" == "prepared" ]]; then
+        echo "***** 执行能量最小化 *****"
+        [[ ! -f em.tpr ]] && run_command "mpirun -np 1 gmx_mpi grompp -f em.mdp -c mix.pdb -p mix.top -o em.tpr -maxwarn 1"
+        validate_file "em.tpr"
+        [[ ! -f em.gro ]] && run_command "mpirun -np 24 gmx_mpi mdrun -v -deffnm em"
+        validate_file "em.gro"
+        update_state "em_done"
+    fi
+
+    # 步骤3: 平衡相
+    check_state
+    if [[ "$LAST_STEP" == "em_done" ]]; then
+        echo "***** 执行平衡相 *****"
+        [[ ! -f eq.tpr ]] && run_command "mpirun -np 1 gmx_mpi grompp -f eq.mdp -c em.gro -p mix.top -o eq.tpr"
+        validate_file "eq.tpr"
+        [[ ! -f eq.gro ]] && run_command "mpirun -np 24 gmx_mpi mdrun -v -deffnm eq"
+        validate_file "eq.gro"
+        update_state "eq_done"
+    fi
+
+    # 步骤4: 生产相
+    check_state
+    if [[ "$LAST_STEP" == "eq_done" ]]; then
+        echo "***** 执行生产相 *****"
+        [[ ! -f prod.tpr ]] && run_command "mpirun -np 1 gmx_mpi grompp -f prod.mdp -c eq.gro -t eq.cpt -p mix.top -o prod.tpr"
+        validate_file "prod.tpr"
+        [[ ! -f prod.xtc ]] && run_command "mpirun -np 24 gmx_mpi mdrun -v -deffnm prod"
+        validate_file "prod.xtc"
+        update_state "prod_done"
+    fi
+
+    # 步骤5: 轨迹处理
+    #check_state
+    #if [[ "$LAST_STEP" == "prod_done" ]]; then
+    #    echo "***** 处理轨迹 *****"
+    #    [[ ! -f centered.xtc ]] && run_command "echo -e '1\n0' | mpirun -np 1 gmx_mpi trjconv -s prod.tpr -f prod.xtc -o centered.xtc -pbc mol -center -ur compact"
+    #    validate_file "centered.xtc"
+    #    update_state "trjconv_done"
+    #fi
+
+    check_state
+    if [[ "$LAST_STEP" == "completed" ]]; then
+        echo "***** 所有步骤成功完成！ *****"
+    fi
+}
+
+# 执行主程序
+main

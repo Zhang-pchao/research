@@ -1,0 +1,6 @@
+#!/bin/bash
+
+module load anaconda/anaconda.2020.02
+source activate mdanalysis
+
+python density.py

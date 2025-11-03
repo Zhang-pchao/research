@@ -1,0 +1,12 @@
+[ moleculetype ]
+;name            nrexcl
+ N2               3
+
+[ atoms ]
+;   nr  type  resi  res  atom  cgnr     charge      mass       ; qtot   bond_type
+     1   N1     1   MOL    N1    1     0.000000     14.01000 ; qtot 0.000
+     2   N1     1   MOL    N2    2     0.000000     14.01000 ; qtot 0.000
+
+[ bonds ]
+;   ai     aj funct   r             k
+     1      2   1    1.1370e-01    5.5496e+05 ;     N1 - N2    
