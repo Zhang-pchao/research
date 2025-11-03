@@ -1,0 +1,7 @@
+TITLE       Required
+REMARK   1 File
+HETATM    1  N           0       0.000   0.000   0.547                       N
+HETATM    2  N           0       0.000   0.000  -0.547                       N
+END
+CONECT    1    2
+CONECT    2    1
