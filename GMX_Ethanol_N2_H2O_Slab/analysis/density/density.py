@@ -3,15 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# 设置是否使用 center_of_mass
-use_com = False  # 设置为 False 时按原子计算质量密度
+# Toggle whether to use the center of mass
+use_com = False  # When False, compute mass density per atom
 
-# 文件路径
+# File paths
 topfile = '../mix.top'
 grofile = '../eq.gro'
 xtcfile = '../prod.xtc'
 
-# 解析 .top 文件以获取分子数量
+# Parse the .top file to obtain the number of molecules
 def parse_top_molecules(topfile):
     molecules = {}
     with open(topfile, 'r') as f:
@@ -32,47 +32,47 @@ def parse_top_molecules(topfile):
                     break
     return molecules
 
-# 获取分子数量
+# Retrieve molecule counts
 molecules = parse_top_molecules(topfile)
 n_ethanol = molecules.get('ethanol', 0)
 n_n2 = molecules.get('N2', 0)
 n_water = molecules.get('SOL', 0)
 
-# 创建 Universe 对象
+# Create the Universe object
 u = mda.Universe(grofile, xtcfile)
 
-# 自动选择分子
+# Automatically select molecules
 ethanol_atoms = None
 if n_ethanol > 0:
     ethanol_atoms = u.select_atoms(f'resname MOL and resid 1:{n_ethanol}')
 n2_atoms = u.select_atoms(f'resname MOL and resid {n_ethanol+1}:{n_ethanol+n_n2}')
 water_atoms = u.select_atoms('resname SOL')
 
-# 验证选择的原子数
+# Validate the number of selected atoms
 if ethanol_atoms:
     print(f"Ethanol atoms: {len(ethanol_atoms)}")
 print(f"N2 atoms: {len(n2_atoms)}")
 print(f"Water atoms: {len(water_atoms)}")
 
-# 定义分子质量（单位：u）
+# Define molecular masses (in atomic mass units)
 ethanol_mass = 1.008*6+12.011*2+15.999
 n2_mass = 14.007*2
 water_mass = 1.008*2+15.999
 
-# 密度计算设置
+# Density calculation settings
 box = u.dimensions
 z_max = box[2]
 n_bins = 100
 bin_edges = np.linspace(0, z_max, n_bins + 1)
 bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-# 初始化密度数组
+# Initialize density arrays
 density_ethanol = np.zeros(n_bins)
 density_n2 = np.zeros(n_bins)
 density_water = np.zeros(n_bins)
 density_total = np.zeros(n_bins)
 
-# 原子质量（amu）设置（可根据实际 .top 或 .itp 文件改进）
+# Atomic mass (amu) table (can be refined using the actual .top or .itp files)
 mass_table = {
     'H': 1.008,
     'C': 12.011,
@@ -80,7 +80,7 @@ mass_table = {
     'O': 15.999
 }
 
-# 遍历轨迹
+# Iterate over the trajectory
 n_frames = 0
 for ts in u.trajectory:
     if ts.frame < 100:
@@ -112,7 +112,7 @@ for ts in u.trajectory:
                          n2_hist * n2_mass + water_hist * water_mass
 
     else:
-        # 按原子计算
+        # Atom-wise calculation
         def atomwise_density(atomgroup, label):
             hist = np.zeros(n_bins)
             for atom in atomgroup:
@@ -141,13 +141,13 @@ for ts in u.trajectory:
 if n_frames == 0:
     raise ValueError("No frames processed after skipping first frames.")
 
-# 平均
+# Average over frames
 density_ethanol /= n_frames
 density_n2 /= n_frames
 density_water /= n_frames
 density_total /= n_frames
 
-# 单位转换为 g/cm³
+# Convert units to g/cm³
 area = box[0] * box[1] * 1e-16  # Å² to cm²
 bin_height = z_max / n_bins * 1e-8  # Å to cm
 volume_per_bin = area * bin_height
@@ -158,7 +158,7 @@ density_n2 = density_n2 / avogadro / volume_per_bin * 1e3
 density_water = density_water / avogadro / volume_per_bin * 1e3
 density_total = density_total / avogadro / volume_per_bin * 1e3
 
-# 保存数据
+# Save data
 data = {
     'z (Å)': bin_centers,
     'Density_N2 (g/cm³)': density_n2,
@@ -170,9 +170,9 @@ if n_ethanol > 0:
 
 df = pd.DataFrame(data)
 df.to_csv('density_data.csv', index=False)
-print("密度数据已保存至 'density_data.csv'")
+print("Density data saved to 'density_data.csv'")
 
-# 绘图
+# Plotting
 plt.figure(figsize=(10, 6))
 if n_ethanol > 0:
     plt.plot(bin_centers, density_ethanol, label='Ethanol')
@@ -185,4 +185,4 @@ plt.legend()
 plt.grid(True)
 plt.savefig('density_plot.png')
 plt.show()
-print("密度图已保存至 'density_plot.png'")
+print("Density plot saved to 'density_plot.png'")
