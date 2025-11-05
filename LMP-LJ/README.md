@@ -20,3 +20,18 @@ This script continues from the same configuration but applies a force on the top
 - Restart outputs every 500,000 steps and long production runs for sampling interfacial properties.
 
 Run each input with the corresponding directory as the working directory so that relative paths resolve correctly (e.g., `lmp -in in.lammps`).
+
+## `GEO/2D-GEO.py`
+
+`GEO/2D-GEO.py` generates the shared initial configuration (`geo.dat`/`geo.xyz`) for the oil–gas–water slab simulations. The script builds a three-dimensional lattice, assigns atom types for the substrate, water, gas bubble, and oil beads, and creates intramolecular bonds within the oil phase. Key capabilities include:
+
+- Parameterized grid dimensions and phase positioning to customize the slab geometry.
+- Region-based atom typing with defaults that reproduce the published configuration.
+- Optional bond creation rules that link adjacent oil beads across the mixed phase.
+- Writers for both LAMMPS data files and XYZ snapshots, plus summary statistics for verification.
+
+To regenerate the geometry, adjust the constants in `main()` as needed and run the script with Python 3 from within `LMP-LJ/GEO/`:
+
+```bash
+python 2D-GEO.py
+```
