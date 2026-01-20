@@ -1,4 +1,8 @@
-# OPES-DPMD-NRR Workflow Assets
+# Paper
+
+Solvent effect on the electrocatalytic nitrogen reduction reaction: a deep potential molecular dynamics simulation with enhanced sampling for the case of the ruthenium single atom catalyst. [JMCA](https://doi.org/10.1039/D5TA09029F)
+
+# OPES-DPMD-NRR Workflow
 
 This directory collects the input decks, scripts, and reference data that support the neural network reactive dynamics workflow for nitrogen reduction using OPES and DeePMD-based force fields. The material is organized by stage of the pipeline.
 
@@ -45,3 +49,4 @@ The workflow references the following software stack:
 - **PLUMED**: custom collective variables are implemented against PLUMED 2 and used to couple with LAMMPS for OPES sampling (as indicated by `Voronoi_collective_variables/VoronoiD3.cpp` and `Enhanced_Sampling/OPES_MD/input.plumed`).
 
 These inputs can be adapted to target infrastructures by updating filesystem paths, scheduler directives, and module names in the JSON descriptors.
+
