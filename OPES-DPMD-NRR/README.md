@@ -1,8 +1,33 @@
-# Paper
+# OPES-DPMD-NRR
 
-Solvent effect on the electrocatalytic nitrogen reduction reaction: a deep potential molecular dynamics simulation with enhanced sampling for the case of the ruthenium single atom catalyst. [JMCA](https://doi.org/10.1039/D5TA09029F)
+## Related paper
 
-# OPES-DPMD-NRR Workflow
+**Solvent effect on the electrocatalytic nitrogen reduction reaction: a deep potential molecular dynamics simulation with enhanced sampling for the case of the ruthenium single atom catalyst**  
+Journal of Materials Chemistry A (2026)  
+DOI: [10.1039/D5TA09029F](https://doi.org/10.1039/D5TA09029F)
+
+## Abstract (brief)
+
+This work uses deep-potential molecular dynamics with enhanced sampling to quantify how solvent environments affect electrocatalytic nitrogen reduction on a Ru single-atom catalyst. The simulations reproduce the rate-determining-step energy barrier in agreement with experimental observations, supporting the reliability of the OPES + DPMD workflow for mechanistic analysis of NRR.
+
+## Citation (BibTeX)
+
+```bibtex
+@Article{Zhang_JMaterChemA_2026_v14_p7109,
+    author =   {Bowen Zhang and Pengchao Zhang and Xuefei Xu},
+    title =    {{Solvent effect on the electrocatalytic nitrogen reduction reaction: a
+             deep potential molecular dynamics simulation with enhanced sampling
+             for the case of the ruthenium single atom catalyst}},
+    journal =  {J. Mater. Chem. A},
+    year =     2026,
+    volume =   14,
+    number =   12,
+    pages =    {7109--7120},
+    doi =      {10.1039/D5TA09029F}
+}
+```
+
+## Workflow overview
 
 This directory collects the input decks, scripts, and reference data that support the neural network reactive dynamics workflow for nitrogen reduction using OPES and DeePMD-based force fields. The material is organized by stage of the pipeline.
 
