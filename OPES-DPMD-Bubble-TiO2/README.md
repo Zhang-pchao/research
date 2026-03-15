@@ -108,7 +108,7 @@ This folder contains the DeePMD-kit training configuration and helper scripts us
 
 - q.sh
   - Example HPC / local training helper script:
-    - Activates conda environment: source activate /home/pengchao/app/anaconda3/envs/dpmdkit_v2.2.10
+    - Activates conda environment: source activate /your_envs_path/dpmdkit_v2.2.10
     - Runs training: dp train run.json --skip-neighbor-stat
     - Freezes the trained model: dp freeze
     - Compresses the model: dp compress
@@ -129,10 +129,3 @@ Note: I attempted to list and read the contents of OPES-DPMD-Bubble-TiO2/Enhance
 - Python analyses expect a scientific Python environment with NumPy, SciPy, Matplotlib, ASE, and MDAnalysis.
 - DeePMD-kit workflow (see q.sh): activate a conda env with dp installed (example env: dpmdkit_v2.2.10), run dp train on run.json, then dp freeze and dp compress to produce the final ready-to-use Deep Potential model.
 - Many scripts include run.sh templates demonstrating example invocations and environment activation. Consult these for command-line options and typical runtime parameters.
-
-## Next steps / options
-
-- I can further refine this README with per-file descriptions from Enhanced_Sampling once the files are accessible.
-- I can produce a shorter summary paragraph for the repository root README if desired.
-
-If this update is correct, please consider this the committed README for OPES-DPMD-Bubble-TiO2.
