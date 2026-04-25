@@ -129,3 +129,12 @@ Note: I attempted to list and read the contents of OPES-DPMD-Bubble-TiO2/Enhance
 - Python analyses expect a scientific Python environment with NumPy, SciPy, Matplotlib, ASE, and MDAnalysis.
 - DeePMD-kit workflow (see q.sh): activate a conda env with dp installed (example env: dpmdkit_v2.2.10), run dp train on run.json, then dp freeze and dp compress to produce the final ready-to-use Deep Potential model.
 - Many scripts include run.sh templates demonstrating example invocations and environment activation. Consult these for command-line options and typical runtime parameters.
+
+```bibtex
+@article{Zhang_JAmChemSoc_2026,
+  title        = {{Nanobubble Nucleation and Dissolution Near the Anatase (101)–Water Interface}},
+  author       = {Pengchao Zhang, Yawen Gao, Changsheng Chen, Xiangdang Guo, Chao Sun, Xuefei Xu},
+  year         = 2026,
+  journal      = {J. Am. Chem. Soc.},
+  doi          = {10.1021/jacs.6c05480},
+}
