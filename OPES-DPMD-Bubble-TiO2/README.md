@@ -19,6 +19,7 @@ All Python tools rely on a scientific Python stack (NumPy, SciPy, Matplotlib, AS
   journal      = {J. Am. Chem. Soc.},
   doi          = {10.1021/jacs.6c05480},
 }
+```
 
 Contents and descriptions
 
