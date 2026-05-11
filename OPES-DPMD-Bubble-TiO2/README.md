@@ -17,6 +17,9 @@ All Python tools rely on a scientific Python stack (NumPy, SciPy, Matplotlib, AS
   author       = {Pengchao Zhang, Yawen Gao, Changsheng Chen, Xiangdang Guo, Chao Sun, Xuefei Xu},
   year         = 2026,
   journal      = {J. Am. Chem. Soc.},
+  volume       = 148,
+  number       = 17,
+  pages        = {18507--18517},
   doi          = {10.1021/jacs.6c05480},
 }
 ```
