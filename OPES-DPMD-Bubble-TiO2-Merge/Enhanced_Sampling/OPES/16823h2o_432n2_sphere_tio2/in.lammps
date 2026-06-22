@@ -1,0 +1,72 @@
+variable        NSTEPS          equal 500000
+variable        THERMO_FREQ     equal 1000
+variable        DUMP_FREQ       equal 1000
+variable        TEMP            equal 330.0000
+variable        NUM_1           equal 20260406
+
+echo            screen
+
+units           metal
+boundary        p p p
+atom_style      atomic
+
+read_data		model.data
+#read_restart	restart.200000.cont
+
+neighbor        1.0 bin
+
+pair_style      deepmd frozen_model_compressed.pb 
+pair_coeff      * *
+
+group           nitrogen type 3   
+
+thermo_style    custom step temp density pe ke etotal vol lx ly lz press
+thermo          ${THERMO_FREQ}
+
+# CSVR NVT
+#variable        TAU_T           equal 0.040
+#velocity        all create ${TEMP} ${NUM_1} dist gaussian
+#fix             dpgen_plm all plumed plumedfile in.plumed outfile out.plumed
+#fix             1 all nve
+#fix             2 all temp/csvr ${TEMP} ${TEMP} ${TAU_T} ${NUM_1}
+
+velocity        all create ${TEMP} ${NUM_1} rot yes mom yes dist gaussian
+fix             dpgen_plm all plumed plumedfile in.plumed outfile out.plumed
+variable        PRES            equal 1.000000
+variable        TAU_T           equal 0.100000
+variable        TAU_P           equal 1.000000
+fix             1 all nvt temp ${TEMP} ${TEMP} ${TAU_T}
+#fix            1 all npt temp ${TEMP} ${TEMP} ${TAU_T} iso ${PRES} ${PRES} ${TAU_P}
+
+# Add walls
+#region          lowerwall block INF INF INF INF 0 INF units box
+#region          upperwall block INF INF INF INF INF 150 units box
+#fix             setlowerwall all wall/region lowerwall harmonic 1 0.0 1
+#fix             setupperwall all wall/region upperwall harmonic 2 0.0 1
+
+dump            bubble1  all custom ${DUMP_FREQ}   bubble_1k.lammpstrj    id type x y z    
+dump            bubble2  all custom 100000         bubble_10w.lammpstrj   id type x y z    
+dump            bubble3  all custom 100000         force_10w.lammpstrj    id type fx fy fz 
+dump            bubble4  all custom 100000         velocity_10w.lammpstrj id type vx vy vz 
+dump_modify	    bubble1 sort id
+dump_modify	    bubble2 sort id
+dump_modify	    bubble3 sort id
+dump_modify	    bubble4 sort id
+
+dump            d3  nitrogen  custom  10  n2.lammpstrj  id type x y z
+dump_modify	    d3  sort id
+
+#dump           netcdf1  nitrogen  netcdf  10  n2.nc  id type x y z
+#dump_modify	netcdf1  sort id
+
+#dump           xyz_dump2 all xyz 10000       trajectory_1w.xyz
+#dump_modify    xyz_dump2 element H O N Na Cl Ti
+
+restart         10000 restart.*.cont
+
+timestep        0.001
+run             ${NSTEPS}
+
+write_restart   *.comp
+write_data      *.data
+
